@@ -1,0 +1,152 @@
+[
+  {
+    "city1": "Vancouver",
+    "city2": "Montreal",
+    "point_value": 20
+  },
+  {
+    "city1": "Duluth",
+    "city2": "Houston",
+    "point_value": 8
+  },
+  {
+    "city1": "Duluth",
+    "city2": "El Paso",
+    "point_value": 10
+  },
+  {
+    "city1": "Winnipeg",
+    "city2": "Houston",
+    "point_value": 12
+  },
+  {
+    "city1": "Kansas City",
+    "city2": "Houston",
+    "point_value": 5
+  },
+  {
+    "city1": "Toronto",
+    "city2": "Miami",
+    "point_value": 10
+  },
+  {
+    "city1": "Winnepeg",
+    "city2": "Little Rock",
+    "point_value": 11
+  },
+  {
+    "city1": "Chicago",
+    "city2": "Santa Fe",
+    "point_value": 9
+  },
+  {
+    "city1": "Dallas",
+    "city2": "New York",
+    "point_value": 11
+  },
+  {
+    "city1": "New York",
+    "city2": "Atlanta",
+    "point_value": 6
+  },
+  {
+    "city1": "Denver",
+    "city2": "El Paso",
+    "point_value": 4
+  },
+  {
+    "city1": "Los Angeles",
+    "city2": "Chicago",
+    "point_value": 16
+  },
+  {
+    "city1": "Vancouver",
+    "city2": "Santa Fe",
+    "point_value": 13
+  },
+  {
+    "city1": "Sault Ste. Marie",
+    "city2": "Oklahoma City",
+    "point_value": 9
+  },
+  {
+    "city1": "Sauly Ste. Marie",
+    "city2": "Nashville",
+    "point_value": 8
+  },
+  {
+    "city1": "Chicago",
+    "city2": "New Orleans",
+    "point_value": 7
+  },
+  {
+    "city1": "Montreal",
+    "city2": "Atlanta",
+    "point_value": 9
+  },
+  {
+    "city1": "San Francisco",
+    "city2": "Atlanta",
+    "point_value": 17
+  },
+  {
+    "city1": "Portland",
+    "city2": "Nashville",
+    "point_value": 17
+  },
+  {
+    "city1": "Helena",
+    "city2": "Los Angeles",
+    "point_value": 8
+  },
+  {
+    "city1": "Los Angeles",
+    "city2": "Miami",
+    "point_value": 20
+  },
+  {
+    "city1": "Los Angeles",
+    "city2": "New York",
+    "point_value": 21
+  },
+  {
+    "city1": "Montreal",
+    "city2": "New Orleans",
+    "point_value": 13
+  },
+  {
+    "city1": "Denver",
+    "city2": "Pittsburgh",
+    "point_value": 11
+  },
+  {
+    "city1": "Calgary",
+    "city2": "Phoenix",
+    "point_value": 13
+  },
+  {
+    "city1": "Seattle",
+    "city2": "New York",
+    "point_value": 22
+  },
+  {
+    "city1": "Calgary",
+    "city2": "Salt Lake City",
+    "point_value": 7
+  },
+  {
+    "city1": "Seattle",
+    "city2": "Los Angeles",
+    "point_value": 9
+  },
+  {
+    "city1": "Boston",
+    "city2": "Miami",
+    "point_value": 12
+  },
+  {
+    "city1": "Portland",
+    "city2": "Phoenix",
+    "point_value": 11
+  }
+]

@@ -1,0 +1,47 @@
+[
+  {
+    "type": "Box",
+    "color": "pink",
+    "quantity": 12
+  },
+  {
+    "type": "Passenger",
+    "color": "white",
+    "quantity": 12
+  },
+  {
+    "type": "Tanker",
+    "color": "blue",
+    "quantity": 12
+  },
+  {
+    "type": "Reefer",
+    "color": "yellow",
+    "quantity": 12
+  },
+  {
+    "type": "Freight",
+    "color": "orange",
+    "quantity": 12
+  },
+  {
+    "type": "Hopper",
+    "color": "black",
+    "quantity": 12
+  },
+  {
+    "type": "Coal",
+    "color": "red",
+    "quantity": 12
+  },
+  {
+    "type": "Caboose",
+    "color": "green",
+    "quantity": 12
+  },
+  {
+    "type": "Locomotive",
+    "color": "any",
+    "quantity": 14
+  }
+]

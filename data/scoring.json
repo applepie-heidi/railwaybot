@@ -1,0 +1,29 @@
+{
+  "longest_continuous_path": 10,
+  "route_scoring": [
+    {
+      "length": 1,
+      "points": 1
+    },
+    {
+      "length": 2,
+      "points": 2
+    },
+    {
+      "length": 3,
+      "points": 4
+    },
+    {
+      "length": 4,
+      "points": 7
+    },
+    {
+      "length": 5,
+      "points": 10
+    },
+    {
+      "length": 6,
+      "points": 15
+    }
+  ]
+}

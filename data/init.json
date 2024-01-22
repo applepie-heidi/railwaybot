@@ -1,0 +1,12 @@
+{
+  "player_colors": [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "black"
+  ],
+  "trains_per_player": 45,
+  "train_cards_per_player": 4,
+  "destination_cards_per_player": 3
+}
