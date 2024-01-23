@@ -1,0 +1,10 @@
+{
+  "player_colors": [
+    "red",
+    "blue",
+    "green",
+    "yellow",
+    "black"
+  ],
+  "trains_per_player": 45
+}
