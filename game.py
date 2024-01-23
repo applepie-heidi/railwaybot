@@ -1,7 +1,7 @@
 import json
 import random
 
-from board import Board
+from board import Board, Railway
 
 CARDS_DRAW_INITIAL = 4
 CARDS_DRAW = 2
@@ -47,6 +47,9 @@ class Player:
     def remove_destination_card(self, card):
         self.destination_cards.remove(card)
 
+    def add_railway(self, railway):
+        self.claimed_railways.append(railway)
+
     def add_points(self, points):
         self.points += points
 
@@ -55,6 +58,26 @@ class Player:
 
     def remove_trains(self, trains):
         self.trains -= trains
+
+    def route_exists(self, destination_card):
+        city1 = destination_card.city1
+        city2 = destination_card.city2
+
+        visited = set()
+
+        def dfs(current_city):
+            if current_city == city2:
+                return True
+            visited.add(current_city)
+            for railway in self.claimed_railways:
+                if railway.city1 == current_city and railway.city2 not in visited:
+                    if dfs(railway.city2):
+                        return True
+                elif railway.city2 == current_city and railway.city1 not in visited:
+                    if dfs(railway.city1):
+                        return True
+            return False
+        return dfs(city1)
 
 
 class Game:
@@ -81,7 +104,7 @@ class Game:
             game_str += str(player) + "\n"
         return game_str
 
-    def __make(self, destination_cards_filename, train_cards_filename):
+    def __make(self, destination_cards_filename, train_cards_filename, scoring_filename):
         with open(destination_cards_filename, "r") as f:
             data = json.load(f)
             for card in data:
@@ -144,7 +167,7 @@ class Game:
         railway = self.board.get_city(city1).get_unclaimed_railway(city1, city2, color)
         player.remove_trains(railway.length)
         player.add_points(self.scoring[railway.length])
-        player.claimed_railways.append(railway)
+        player.add_railway(railway)
         railway.claimed = True
         for card in cards:
             player.remove_card(card)
@@ -152,4 +175,27 @@ class Game:
         if len(self.players) <= 3:
             railway = self.board.get_city(city1).get_unclaimed_railway(city1, city2)
             railway.claimed = True
+
+    def final_scoring(self):
+        for player in self.players:
+            for destination_card in player.destination_cards:
+                if player.route_exists(destination_card):
+                    player.add_points(destination_card.points)
+                else:
+                    player.remove_points(destination_card.points)
+
+
+if __name__ == '__main__':
+    dc = DestinationCard("Vancouver", "Salt Lake City", 27)
+    p = Player("red", 45)
+
+    p.add_railway(Railway("Calgary", "Vancouver", 3, "red"))
+    p.add_railway(Railway("Calgary", "Helena", 4, "red"))
+    p.add_railway(Railway("Calgary", "Seattle", 4, "red"))
+    p.add_railway(Railway("Seattle", "Vancouver", 1, "red"))
+    p.add_railway(Railway("Portland", "Seattle", 1, "red"))
+    p.add_railway(Railway("Salt Lake City", "San Francisco", 5, "red"))
+    p.add_railway(Railway("Portland", "San Francisco", 5, "red"))
+
+    print(p.route_exists(dc))
 
