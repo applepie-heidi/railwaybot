@@ -119,7 +119,7 @@ class Game:
                     self.cards.append(card["color"])
             random.shuffle(self.cards)
 
-        with open("scoring.json", "r") as f:
+        with open(scoring_filename, "r") as f:
             data = json.load(f)
             self.longest_continuous_path_points = data["longest_continuous_path"]
             for score in data["route_scoring"]:
@@ -183,6 +183,24 @@ class Game:
                     player.add_points(destination_card.points)
                 else:
                     player.remove_points(destination_card.points)
+
+    def play(self, player_filename, num_players):
+        self.set_up_game(player_filename, num_players)
+        self.game_started = True
+
+    def set_up_game(self, player_filename, num_players):
+        with open(player_filename, "r") as f:
+            data = json.load(f)
+            colors = data["player_colors"]
+            random.shuffle(colors)
+            trains_per_player = data["trains_per_player"]
+            for i in range(num_players):
+                player = Player(colors[i], trains_per_player)
+                self.add_player(player)
+                for j in range(CARDS_DRAW_INITIAL):
+                    card = self.draw_card()
+                    player.add_card(card)
+                destination_cards = self.draw_destination_cards()
 
 
 if __name__ == '__main__':

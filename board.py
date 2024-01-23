@@ -74,5 +74,5 @@ class Board:
 
 
 if __name__ == '__main__':
-    board = Board("data/board.json")
+    board = Board("data/jsons/board.json")
     print(board)
