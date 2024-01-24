@@ -1,6 +1,6 @@
 import pytest
 
-from board import Board, City, Railway
+from railwaybot.engine.board import Board
 
 BOARD_FILENAME = "data/jsons/board.json"
 

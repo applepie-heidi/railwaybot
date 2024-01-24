@@ -1,7 +1,7 @@
 import json
 import random
 
-from board import Board, Railway
+from .board import Board, Railway
 
 CARDS_DRAW_INITIAL = 4
 CARDS_DRAW = 2
@@ -28,6 +28,14 @@ class Player:
         self.won = False
 
     def __str__(self):
+        player_str = self.color + "\n"
+        player_str += "  Cards: " + str(self.cards) + "\n"
+        player_str += "  Destination Cards: " + str(self.destination_cards) + "\n"
+        player_str += "  Trains: " + str(self.trains) + "\n"
+        player_str += "  Points: " + str(self.points) + "\n"
+        return player_str
+
+    def __repr__(self):
         player_str = self.color + "\n"
         player_str += "  Cards: " + str(self.cards) + "\n"
         player_str += "  Destination Cards: " + str(self.destination_cards) + "\n"
@@ -77,13 +85,14 @@ class Player:
                     if dfs(railway.city1):
                         return True
             return False
+
         return dfs(city1)
 
 
 class Game:
     def __init__(self, board_filename, destination_cards_filename, train_cards_filename, scoring_filename):
-        self.game_started = False
-        self.game_over = False
+        self.started = False
+        self.over = False
         self.board = Board(board_filename)
         self.players = []
         self.turn = 0
@@ -186,21 +195,16 @@ class Game:
 
     def play(self, player_filename, num_players):
         self.set_up_game(player_filename, num_players)
-        self.game_started = True
+        self.started = True
 
-    def set_up_game(self, player_filename, num_players):
-        with open(player_filename, "r") as f:
-            data = json.load(f)
-            colors = data["player_colors"]
-            random.shuffle(colors)
-            trains_per_player = data["trains_per_player"]
-            for i in range(num_players):
-                player = Player(colors[i], trains_per_player)
-                self.add_player(player)
-                for j in range(CARDS_DRAW_INITIAL):
-                    card = self.draw_card()
-                    player.add_card(card)
-                destination_cards = self.draw_destination_cards()
+    def set_up_game(self, player_colors, trains_per_player, num_players):
+        for i in range(num_players):
+            player = Player(player_colors[i], trains_per_player)
+            self.add_player(player)
+            for j in range(CARDS_DRAW_INITIAL):
+                card = self.draw_card()
+                player.add_card(card)
+            destination_cards = self.draw_destination_cards()
 
 
 if __name__ == '__main__':
@@ -216,4 +220,3 @@ if __name__ == '__main__':
     p.add_railway(Railway("Portland", "San Francisco", 5, "red"))
 
     print(p.route_exists(dc))
-

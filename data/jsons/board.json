@@ -204,7 +204,7 @@
             "city1": "Charleston",
             "city2": "Miami",
             "length": 4,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Charleston",
@@ -318,7 +318,7 @@
             "city1": "Denver",
             "city2": "Omaha",
             "length": 4,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Denver",
@@ -372,7 +372,7 @@
             "city1": "Duluth",
             "city2": "Toronto",
             "length": 6,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Duluth",
@@ -420,7 +420,7 @@
             "city1": "Helena",
             "city2": "Salt Lake City",
             "length": 3,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Helena",
@@ -474,7 +474,7 @@
             "city1": "Kansas City",
             "city2": "Saint Louis",
             "length": 2,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Las Vegas",
@@ -522,7 +522,7 @@
             "city1": "Los Angeles",
             "city2": "San Francisco",
             "length": 3,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Los Angeles",
@@ -648,7 +648,7 @@
             "city1": "Portland",
             "city2": "San Francisco",
             "length": 5,
-            "color": "pink"
+            "color": "purple"
         },
         {
             "city1": "Portland",

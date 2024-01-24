@@ -1,10 +1,35 @@
 {
-  "player_colors": [
-    "red",
-    "blue",
-    "green",
-    "yellow",
-    "black"
+  "colors": [
+    {
+      "name": "red",
+      "r": 255,
+      "g": 0,
+      "b": 0
+    },
+    {
+      "name": "green",
+      "r": 0,
+      "g": 255,
+      "b": 0
+    },
+    {
+      "name": "blue",
+      "r": 0,
+      "g": 0,
+      "b": 255
+    },
+    {
+      "name": "yellow",
+      "r": 255,
+      "g": 255,
+      "b": 0
+    },
+    {
+      "name": "black",
+      "r": 0,
+      "g": 0,
+      "b": 0
+    }
   ],
   "trains_per_player": 45
 }
