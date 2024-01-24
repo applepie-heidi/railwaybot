@@ -21,7 +21,8 @@ class City:
 
         if color:
             for railway in self.railways:
-                if railway.city1 == temp[0] and railway.city2 == temp[1] and railway.color == color and not railway.claimed:
+                if (railway.city1 == temp[0] and railway.city2 == temp[1]
+                        and railway.color == color and not railway.claimed):
                     return railway
         else:
             for railway in self.railways:
