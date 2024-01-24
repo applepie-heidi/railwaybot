@@ -45,6 +45,7 @@ class Railway:
 class Board:
     def __init__(self, filename):
         self.board = {}
+        self.all_railways = []
         self.__make(filename)
 
     def __str__(self):
@@ -63,6 +64,7 @@ class Board:
                 city1 = self.get_city(railway_data["city1"])
                 city2 = self.get_city(railway_data["city2"])
                 railway = Railway(city1, city2, railway_data["length"], railway_data["color"])
+                self.all_railways.append(railway)
                 city1.add_railway(railway)
                 city2.add_railway(railway)
 

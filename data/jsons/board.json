@@ -91,7 +91,7 @@
             "name": "Santa Fe"
         },
         {
-            "name": "Sault St. Marie"
+            "name": "Sault St Marie"
         },
         {
             "name": "Seattle"
@@ -364,7 +364,7 @@
         },
         {
             "city1": "Duluth",
-            "city2": "Sault St. Marie",
+            "city2": "Sault St Marie",
             "length": 3,
             "color": "grey"
         },
@@ -544,7 +544,7 @@
         },
         {
             "city1": "Montreal",
-            "city2": "Sault St. Marie",
+            "city2": "Sault St Marie",
             "length": 5,
             "color": "black"
         },
@@ -687,13 +687,13 @@
             "color": "white"
         },
         {
-            "city1": "Sault St. Marie",
+            "city1": "Sault St Marie",
             "city2": "Toronto",
             "length": 2,
             "color": "grey"
         },
         {
-            "city1": "Sault St. Marie",
+            "city1": "Sault St Marie",
             "city2": "Winnipeg",
             "length": 6,
             "color": "grey"
