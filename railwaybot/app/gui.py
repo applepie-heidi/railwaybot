@@ -168,7 +168,7 @@ def create_choose_players_num_buttons(button_position):
     return button_sprites
 
 
-def create_choose_destination_cards_buttons(button_position) -> Tuple[pg.sprite.Group, list]:
+def create_choose_destination_cards_buttons(button_position):
     button_position_x = button_position[0] - 1.5 * (DESTINATION_SIZE[0] + 10)
     button_position_y = button_position[1]
     button_sprites = pg.sprite.Group()
@@ -198,7 +198,7 @@ def create_decks_and_face_ups(screen_x, screen_y, board_x):
     for card in train_cards_action_sprites.sprites():
         card.rect.x = screen_x - card.rect.width - 10
         card.rect.y = destination_deck.rect.y - card.rect.height + (
-                    train_cards_action_sprites.sprites().index(card) * (card.rect.height + 10))
+                train_cards_action_sprites.sprites().index(card) * (card.rect.height + 10))
 
     train_deck = Deck(TRAIN_DECK_PATH)
     train_cards_action_sprites.add(train_deck)
@@ -226,7 +226,6 @@ def main():
     destination_button_sprites = create_choose_destination_cards_buttons(
         (screen.get_width() / 2, screen.get_height() / 2))
     clicked_destination_button_sprites = pg.sprite.Group()
-    clicked_destination_buttons = []
     choose_destination_cards_text = Text(f"Choose a minimum of {minimum_destination_cards} cards", (0, 0, 0),
                                          BIG_TEXT_SIZE,
                                          screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE)
@@ -238,6 +237,7 @@ def main():
                                        text_size=SMALL_TEXT_SIZE, text_y=40)
     chosen_destination_button_sprite = pg.sprite.GroupSingle()
     chosen_destination_button_sprite.add(chosen_destination_button)
+    chosen_destination_button_sprite.update(delete=True)
     all_destination_sprites = pg.sprite.Group()
     all_destination_sprites.add(destination_button_sprites,
                                 destination_button_text_sprite, chosen_destination_button_sprite)
@@ -257,6 +257,7 @@ def main():
         railway_masks[image_name] = pg.mask.from_surface(railway_images[image_name])
 
     clock = pg.time.Clock()
+    game_setup = True
     choosing_destinations = False
     done = False
     while not done:
@@ -266,25 +267,55 @@ def main():
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if game.started:
                     if choosing_destinations:
+                        destinations_chosen = False
                         destination = destination_click(event.pos, destination_button_sprites)
-                        destinations_chosen = choose_destination_click(event.pos, chosen_destination_button)
+                        if len(clicked_destination_button_sprites.sprites()) >= minimum_destination_cards:
+                            destinations_chosen = choose_destination_click(event.pos, chosen_destination_button)
                         if destinations_chosen:
                             minimum_destination_cards = 1
                             choosing_destinations = False
                             all_destination_sprites.update(delete=True)
                             all_destination_sprites.draw(screen)
+
+                            current_player = game.get_current_player()
+                            card1 = destination_cards[0]
+                            card2 = destination_cards[1]
+                            card3 = destination_cards[2]
+                            for button in clicked_destination_button_sprites:
+                                if button.text == str(card1):
+                                    current_player.add_destination_card(card1)
+                                    destination_cards.remove(card1)
+                                elif button.text == str(card2):
+                                    current_player.add_destination_card(card2)
+                                    destination_cards.remove(card2)
+                                elif button.text == str(card3):
+                                    current_player.add_destination_card(card3)
+                                    destination_cards.remove(card3)
+                            game.discard_destination_cards(destination_cards)
+                            destination_cards = []
+
+                            game.next_turn()
+                            if game.turn == 0 and game_setup:
+                                game_setup = False
+                            elif game.turn != 0 and game_setup:
+                                destination_cards = game.draw_destination_cards()
+                            if not game_setup:
+                                print("Game started")
+                                choosing_destinations = False
                         if destination:
-                            if destination not in clicked_destination_buttons:
-                                clicked_destination_buttons.append(destination)
+                            if destination not in clicked_destination_button_sprites.sprites():
                                 clicked_destination_button_sprites.add(destination)
                             else:
-                                clicked_destination_buttons.remove(destination)
                                 clicked_destination_button_sprites.remove(destination)
 
                             destination_button_sprites.update(color=DESTINATION_COLOR)
                             clicked_destination_button_sprites.update(
                                 color=(DESTINATION_COLOR[0] - 30, DESTINATION_COLOR[1] - 30,
                                        DESTINATION_COLOR[2] - 30))
+                            if len(clicked_destination_button_sprites.sprites()) >= minimum_destination_cards:
+                                chosen_destination_button_sprite.update(color=BUTTON_COLOR)
+                            else:
+                                chosen_destination_button_sprite.update(delete=True)
 
                     else:
                         image_name = railway_click(event.pos, railway_masks)
@@ -301,10 +332,11 @@ def main():
                             break
 
         if game.started:
+            #print(game.turn)
             if choosing_destinations:
+                destination_button_text_sprite.draw(screen)
                 draw_destination_cards(destination_cards, screen, destination_button_sprites)
-                if len(clicked_destination_buttons) >= minimum_destination_cards:
-                    chosen_destination_button_sprite.draw(screen)
+                chosen_destination_button_sprite.draw(screen)
             else:
                 train_cards_action_sprites.draw(screen)
                 destination_cards_action_sprites.draw(screen)
@@ -316,10 +348,8 @@ def main():
 
 
 def draw_destination_cards(destination_cards, screen, destination_button_sprites):
-    destination_button_sprites.draw(screen)
     for button, card in zip(destination_button_sprites.sprites(), destination_cards):
         button.add_text(str(card), SMALL_TEXT_SIZE, 40)
-
     destination_button_sprites.draw(screen)
 
 

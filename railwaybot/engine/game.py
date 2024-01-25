@@ -146,9 +146,8 @@ class Game:
             cards.append(self.destination_cards.pop())
         return cards
 
-    def discard_destination_cards(self, player, cards):
+    def discard_destination_cards(self, cards):
         for card in cards:
-            player.remove_destination_card(card)
             self.destination_cards.insert(0, card)
 
     def draw_card(self, face_up_id=None):
