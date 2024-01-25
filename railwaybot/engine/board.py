@@ -43,10 +43,10 @@ class Railway:
 
 
 class Board:
-    def __init__(self, filename):
+    def __init__(self, path):
         self.board = {}
         self.all_railways = []
-        self.__make(filename)
+        self.__make(path)
 
     def __str__(self):
         board_str = ""
@@ -54,8 +54,8 @@ class Board:
             board_str += str(self.board[city]) + "\n"
         return board_str
 
-    def __make(self, filename):
-        with open(filename, "r") as f:
+    def __make(self, path):
+        with open(path, "r") as f:
             data = json.load(f)
             for city_data in data["cities"]:
                 name = city_data["name"]

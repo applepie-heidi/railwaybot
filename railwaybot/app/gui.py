@@ -1,3 +1,5 @@
+from __future__ import annotations
+from typing import Tuple
 import json
 import os
 import random
@@ -9,7 +11,7 @@ from engine.game import Game, Player
 
 
 def parse_player_json():
-    with open(PLAYER_JSON, "r") as f:
+    with open(PLAYER_PATH, "r") as f:
         data = json.load(f)
         colors = {}
         for color in data["colors"]:
@@ -25,48 +27,97 @@ def get_shuffled_colors(colors):
     return shuffled_colors
 
 
-BOARD_FILENAME = "data/jsons/board.json"
-DESTINATION_CARDS_FILENAME = "data/jsons/destination_cards.json"
-TRAIN_CARDS_FILENAME = "data/jsons/train_cards.json"
-SCORING_FILENAME = "data/jsons/scoring.json"
-PLAYER_JSON = "data/jsons/player.json"
+BOARD_PATH = "data/jsons/board.json"
+DESTINATION_CARDS_PATH = "data/jsons/destination_cards.json"
+TRAIN_CARDS_PATH = "data/jsons/train_cards.json"
+SCORING_PATH = "data/jsons/scoring.json"
+PLAYER_PATH = "data/jsons/player.json"
 RAILWAY_IMAGES_DIRECTORY = "data/images/railways"
-BOARD_IMAGE_FILENAME = "data/images/board.png"
+BOARD_IMAGE_PATH = "data/images/board.png"
+DESTINATION_DECK_PATH = "data/images/destination_back.png"
+TRAIN_DECK_PATH = "data/images/train_back.png"
+TRAIN_EMPTY_PATH = "data/images/train_empty.png"
 BOARD_POSITION = (10, 10)
 COLORS_DICT, TRAINS = parse_player_json()
 COLORS_LIST = get_shuffled_colors(COLORS_DICT)
 SCREEN_COLOR = (220, 216, 215)
 BUTTON_COLOR = (141, 54, 34)
+DESTINATION_COLOR = (123, 147, 147)
 BUTTON_SIZE_X = 100
 BIG_TEXT_SIZE = 100
+SMALL_TEXT_SIZE = 30
+DESTINATION_SIZE = (350, 100)
 
 
 class Button(pg.sprite.Sprite):
-    def __init__(self, color, width, height, text, x, y):
+    def __init__(self, color, width, height, x, y, text=None, text_size=0, text_y=0):
         pg.sprite.Sprite.__init__(self)
+        self.color = color
         self.image = pg.Surface([width, height])
-        self.image.fill(color)
+        self.image.fill(self.color)
         self.rect = self.image.get_rect()
-        text_pos = text.get_rect(centerx=self.image.get_width() / 2, y=15)
-        self.image.blit(text, text_pos)
+        self.text = text
+        self.text_size = text_size
+        self.text_y = text_y
+        if self.text:
+            self._blit_text()
         self.rect.x = x
         self.rect.y = y
 
-    def update(self):
-        self.image.fill(SCREEN_COLOR)
+    def update(self, delete=False, color=None):
+        if delete:
+            self.image.fill(SCREEN_COLOR)
+        else:
+            if color:
+                self.color = color
+                self.image.fill(color)
+            if self.text:
+                self._blit_text()
+
+    def add_text(self, text, text_size, text_y):
+        self.image.fill(self.color)
+        self.text = text
+        self.text_size = text_size
+        self.text_y = text_y
+        self._blit_text()
+
+    def _blit_text(self):
+        font = pg.font.Font(None, self.text_size)
+        text_image = font.render(self.text, True, (0, 0, 0))
+        text_pos = text_image.get_rect(centerx=self.image.get_width() / 2, y=self.text_y)
+        self.image.blit(text_image, text_pos)
 
 
 class Text(pg.sprite.Sprite):
     def __init__(self, text, color, size, x, y):
         pg.sprite.Sprite.__init__(self)
         font = pg.font.Font(None, size)
+        self.text = text
         self.image = font.render(text, True, color)
         self.rect = self.image.get_rect()
         self.rect.x = x - self.image.get_width() / 2
         self.rect.y = y
 
-    def update(self):
-        self.image.fill(SCREEN_COLOR)
+    def update(self, delete=False):
+        if delete:
+            self.image.fill(SCREEN_COLOR)
+
+
+class Deck(pg.sprite.Sprite):
+    def __init__(self, image_path):
+        pg.sprite.Sprite.__init__(self)
+        self.image = load_image(image_path, scale=0.7)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+
+
+class FaceUpCard(pg.sprite.Sprite):
+    def __init__(self, image_path):
+        pg.sprite.Sprite.__init__(self)
+        self.image = load_image(image_path, scale=0.7)
+        self.image = self.image.convert_alpha()
+        self.rect = self.image.get_rect()
+        self.image.fill(BUTTON_COLOR)
 
 
 def load_railway_images(image_directory):
@@ -81,9 +132,14 @@ def load_railway_images(image_directory):
     return railway_images
 
 
-def load_image(path, color_key=None):
+def load_image(path, color_key=None, scale=1.0):
     image = pg.image.load(path)
     image = image.convert_alpha()
+
+    size = image.get_size()
+    size = (size[0] * scale, size[1] * scale)
+    image = pg.transform.scale(image, size)
+
     if color_key:
         image.set_colorkey(color_key)
     return image
@@ -101,23 +157,55 @@ def create_players(game, players_num):
         game.add_player(player)
 
 
-def create_buttons(button_position):
+def create_choose_players_num_buttons(button_position):
     button_position_x = button_position[0] - 4 * (BUTTON_SIZE_X + 10)
     button_position_y = button_position[1]
-    buttons = []
-    font = pg.font.Font(None, BUTTON_SIZE_X)
     button_sprites = pg.sprite.Group()
     for i in range(2, len(COLORS_DICT) + 1):
-        button = Button(BUTTON_COLOR, BUTTON_SIZE_X, BUTTON_SIZE_X, font.render(str(i), True, (0, 0, 0)),
-                        button_position_x + i * (BUTTON_SIZE_X + 10), button_position_y)
+        button = Button(BUTTON_COLOR, BUTTON_SIZE_X, BUTTON_SIZE_X, button_position_x + i * (BUTTON_SIZE_X + 10),
+                        button_position_y, text=str(i), text_size=BIG_TEXT_SIZE, text_y=15)
         button_sprites.add(button)
-        buttons.append(button)
-    return button_sprites, buttons
+    return button_sprites
 
 
-def current_player_text(text):
-    font = pg.font.Font(None, 36)
-    return font.render(text, True, (0, 0, 0))
+def create_choose_destination_cards_buttons(button_position) -> Tuple[pg.sprite.Group, list]:
+    button_position_x = button_position[0] - 1.5 * (DESTINATION_SIZE[0] + 10)
+    button_position_y = button_position[1]
+    button_sprites = pg.sprite.Group()
+
+    for i in range(3):
+        button = Button(DESTINATION_COLOR, DESTINATION_SIZE[0], DESTINATION_SIZE[1],
+                        button_position_x + i * (DESTINATION_SIZE[0] + 10), button_position_y)
+        button_sprites.add(button)
+
+    return button_sprites
+
+
+def create_decks_and_face_ups(screen_x, screen_y, board_x):
+    train_cards_action_sprites = pg.sprite.Group()
+    destination_cards_action_sprites = pg.sprite.Group()
+
+    destination_deck = Deck(DESTINATION_DECK_PATH)
+    destination_cards_action_sprites.add(destination_deck)
+
+    for i in range(5):
+        face_up_card = FaceUpCard(TRAIN_EMPTY_PATH)
+        train_cards_action_sprites.add(face_up_card)
+
+    destination_deck.rect.x = BOARD_POSITION[0] + board_x + 20
+    destination_deck.rect.y = (screen_y - destination_deck.rect.height) / 2
+
+    for card in train_cards_action_sprites.sprites():
+        card.rect.x = screen_x - card.rect.width - 10
+        card.rect.y = destination_deck.rect.y - card.rect.height + (
+                    train_cards_action_sprites.sprites().index(card) * (card.rect.height + 10))
+
+    train_deck = Deck(TRAIN_DECK_PATH)
+    train_cards_action_sprites.add(train_deck)
+    train_deck.rect.x = destination_deck.rect.x
+    train_deck.rect.y = destination_deck.rect.y + destination_deck.rect.height + 10
+
+    return destination_cards_action_sprites, train_cards_action_sprites
 
 
 def main():
@@ -127,14 +215,39 @@ def main():
 
     screen.fill(SCREEN_COLOR)
 
-    game = Game(BOARD_FILENAME, DESTINATION_CARDS_FILENAME, TRAIN_CARDS_FILENAME, SCORING_FILENAME)
+    game = Game(BOARD_PATH, DESTINATION_CARDS_PATH, TRAIN_CARDS_PATH, SCORING_PATH)
 
     choose_button_text = Text("Choose the number of players", (0, 0, 0), BIG_TEXT_SIZE, screen.get_width() / 2,
                               screen.get_height() / 2 - BIG_TEXT_SIZE)
-    button_sprites, buttons = create_buttons((screen.get_width() / 2, screen.get_height() / 2))
+    button_sprites = create_choose_players_num_buttons((screen.get_width() / 2, screen.get_height() / 2))
     button_sprites.add(choose_button_text)
 
-    board = load_image(BOARD_IMAGE_FILENAME)
+    minimum_destination_cards = 2
+    destination_button_sprites = create_choose_destination_cards_buttons(
+        (screen.get_width() / 2, screen.get_height() / 2))
+    clicked_destination_button_sprites = pg.sprite.Group()
+    clicked_destination_buttons = []
+    choose_destination_cards_text = Text(f"Choose a minimum of {minimum_destination_cards} cards", (0, 0, 0),
+                                         BIG_TEXT_SIZE,
+                                         screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE)
+    destination_button_text_sprite = pg.sprite.GroupSingle()
+    destination_button_text_sprite.add(choose_destination_cards_text)
+    chosen_destination_button = Button(BUTTON_COLOR, BUTTON_SIZE_X, BUTTON_SIZE_X,
+                                       screen.get_width() / 2 + DESTINATION_SIZE[0],
+                                       screen.get_height() / 2 + DESTINATION_SIZE[1] + 10, text="Choose",
+                                       text_size=SMALL_TEXT_SIZE, text_y=40)
+    chosen_destination_button_sprite = pg.sprite.GroupSingle()
+    chosen_destination_button_sprite.add(chosen_destination_button)
+    all_destination_sprites = pg.sprite.Group()
+    all_destination_sprites.add(destination_button_sprites,
+                                destination_button_text_sprite, chosen_destination_button_sprite)
+    destination_cards = game.draw_destination_cards()
+
+    board = load_image(BOARD_IMAGE_PATH)
+    board = board.convert_alpha()
+
+    destination_cards_action_sprites, train_cards_action_sprites = create_decks_and_face_ups(
+        screen.get_width(), screen.get_height(), board.get_width())
 
     railway_images = load_railway_images(RAILWAY_IMAGES_DIRECTORY)
     railway_masks = {}
@@ -144,36 +257,84 @@ def main():
         railway_masks[image_name] = pg.mask.from_surface(railway_images[image_name])
 
     clock = pg.time.Clock()
+    choosing_destinations = False
     done = False
-
     while not done:
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 done = True
             elif event.type == pg.MOUSEBUTTONDOWN:
                 if game.started:
-                    image_name = mouse_button_down(event.pos, railway_masks)
-                    if image_name:
-                        board = board_with_masks(screen, board, railway_images[image_name])
+                    if choosing_destinations:
+                        destination = destination_click(event.pos, destination_button_sprites)
+                        destinations_chosen = choose_destination_click(event.pos, chosen_destination_button)
+                        if destinations_chosen:
+                            minimum_destination_cards = 1
+                            choosing_destinations = False
+                            all_destination_sprites.update(delete=True)
+                            all_destination_sprites.draw(screen)
+                        if destination:
+                            if destination not in clicked_destination_buttons:
+                                clicked_destination_buttons.append(destination)
+                                clicked_destination_button_sprites.add(destination)
+                            else:
+                                clicked_destination_buttons.remove(destination)
+                                clicked_destination_button_sprites.remove(destination)
+
+                            destination_button_sprites.update(color=DESTINATION_COLOR)
+                            clicked_destination_button_sprites.update(
+                                color=(DESTINATION_COLOR[0] - 30, DESTINATION_COLOR[1] - 30,
+                                       DESTINATION_COLOR[2] - 30))
+
+                    else:
+                        image_name = railway_click(event.pos, railway_masks)
+                        if image_name:
+                            board = board_with_masks(screen, board, railway_images[image_name])
                 else:
-                    for i in range(len(buttons)):
-                        if buttons[i].rect.collidepoint(event.pos):
+                    for i in range(len(button_sprites.sprites())):
+                        if button_sprites.sprites()[i].rect.collidepoint(event.pos):
                             create_players(game, i + 2)
                             game.started = True
-                            button_sprites.update()
+                            choosing_destinations = True
+                            button_sprites.update(delete=True)
                             button_sprites.draw(screen)
-                            print(game.players)
                             break
 
         if game.started:
-            screen.blit(board, BOARD_POSITION)
+            if choosing_destinations:
+                draw_destination_cards(destination_cards, screen, destination_button_sprites)
+                if len(clicked_destination_buttons) >= minimum_destination_cards:
+                    chosen_destination_button_sprite.draw(screen)
+            else:
+                train_cards_action_sprites.draw(screen)
+                destination_cards_action_sprites.draw(screen)
+                screen.blit(board, BOARD_POSITION)
         else:
             button_sprites.draw(screen)
         pg.display.update()
         clock.tick(60)
 
 
-def mouse_button_down(event_pos, masks):
+def draw_destination_cards(destination_cards, screen, destination_button_sprites):
+    destination_button_sprites.draw(screen)
+    for button, card in zip(destination_button_sprites.sprites(), destination_cards):
+        button.add_text(str(card), SMALL_TEXT_SIZE, 40)
+
+    destination_button_sprites.draw(screen)
+
+
+def destination_click(event_pos, destination_button_sprites):
+    for button in destination_button_sprites.sprites():
+        if button.rect.collidepoint(event_pos):
+            return button
+
+
+def choose_destination_click(event_pos, button):
+    if button.rect.collidepoint(event_pos):
+        return True
+
+
+def railway_click(event_pos, masks):
     for key in masks:
         if is_click_inside_mask(event_pos, masks[key]):
             return key

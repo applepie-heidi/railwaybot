@@ -16,6 +16,9 @@ class DestinationCard:
         self.city2 = city2
         self.points = points
 
+    def __str__(self):
+        return self.city1 + " - " + self.city2 + " (" + str(self.points) + ")"
+
 
 class Player:
     def __init__(self, color, trains):
@@ -90,10 +93,10 @@ class Player:
 
 
 class Game:
-    def __init__(self, board_filename, destination_cards_filename, train_cards_filename, scoring_filename):
+    def __init__(self, board_path, destination_cards_path, train_cards_path, scoring_path):
         self.started = False
         self.over = False
-        self.board = Board(board_filename)
+        self.board = Board(board_path)
         self.players = []
         self.turn = 0
         self.round = 0
@@ -103,7 +106,7 @@ class Game:
         self.discarded_cards = []
         self.scoring = {}
         self.longest_continuous_path_points = 0
-        self.__make(destination_cards_filename, train_cards_filename, scoring_filename)
+        self.__make(destination_cards_path, train_cards_path, scoring_path)
 
     def __str__(self):
         game_str = "Turn: " + str(self.turn) + "\n"
@@ -113,22 +116,22 @@ class Game:
             game_str += str(player) + "\n"
         return game_str
 
-    def __make(self, destination_cards_filename, train_cards_filename, scoring_filename):
-        with open(destination_cards_filename, "r") as f:
+    def __make(self, destination_cards_path, train_cards_path, scoring_path):
+        with open(destination_cards_path, "r") as f:
             data = json.load(f)
             for card in data:
                 destination_card = DestinationCard(card["city1"], card["city2"], card["points"])
                 self.destination_cards.append(destination_card)
             random.shuffle(self.destination_cards)
 
-        with open(train_cards_filename, "r") as f:
+        with open(train_cards_path, "r") as f:
             data = json.load(f)
             for card in data:
                 for i in range(card["quantity"]):
                     self.cards.append(card["color"])
             random.shuffle(self.cards)
 
-        with open(scoring_filename, "r") as f:
+        with open(scoring_path, "r") as f:
             data = json.load(f)
             self.longest_continuous_path_points = data["longest_continuous_path"]
             for score in data["route_scoring"]:
@@ -193,8 +196,8 @@ class Game:
                 else:
                     player.remove_points(destination_card.points)
 
-    def play(self, player_filename, num_players):
-        self.set_up_game(player_filename, num_players)
+    def play(self, player_path, num_players):
+        self.set_up_game(player_path, num_players)
         self.started = True
 
     def set_up_game(self, player_colors, trains_per_player, num_players):
