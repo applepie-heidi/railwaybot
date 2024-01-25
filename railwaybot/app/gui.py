@@ -425,18 +425,23 @@ def main():
                                 chosen_destination_button_sprite.update(delete=True)
 
                     elif turn_action:
-
-                        train_card, draws_left = train_card_click(game, event.pos, draws_left, train_deck_sprite,
-                                                                  train_cards_action_sprites)
+                        train_card = None
                         destination_cards = []
                         mini_card = None
-                        if draws_left == 2:
+
+                        if not clicked_route_claiming_cards_sprites.sprites():
+                            train_card, draws_left = train_card_click(game, event.pos, draws_left, train_deck_sprite,
+                                                                      train_cards_action_sprites)
                             destination_cards = destination_deck_click(game, event.pos, destination_deck_sprite,
                                                                        destination_cards)
+                            if draws_left == 2:
+                                mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
+                                                        clicked_route_claiming_cards_sprites)
+                        else:
                             mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
                                                         clicked_route_claiming_cards_sprites)
 
-                        if destination_cards and not clicked_route_claiming_cards_sprites.sprites():
+                        if destination_cards:
                             choosing_destinations = True
                             turn_action = False
                             destination_cards = game.draw_destination_cards()
@@ -446,7 +451,7 @@ def main():
                                 BIG_TEXT_SIZE, screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE,
                                 center=True)
                             destination_button_text_sprite.add(choose_destination_cards_text)
-                        elif train_card and not clicked_route_claiming_cards_sprites.sprites():
+                        elif train_card:
                             draw_mini_numbers(screen, game.get_current_player(), mini_numbers_sprites,
                                               all_game_turn_sprites,
                                               mini_cards_sprites.sprites()[0].rect.width)
@@ -565,6 +570,7 @@ def draw_chosen_destinations_text(game, board, chosen_destinations_text_sprites,
 
 def turn_face_up_cards(game, train_cards_action_sprites, train_images_dict):
     for card, face_up_card in zip(game.face_up_cards, train_cards_action_sprites.sprites()):
+
         face_up_card.update(color=card, image_path=train_images_dict[card])
 
 
@@ -596,6 +602,7 @@ def mini_card_click(event_pos, game, mini_cards_sprites, clicked_route_claiming_
 
 def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards_action_sprites):
     if len(train_cards_action_sprites.sprites()) < 5:
+        print(len(train_cards_action_sprites.sprites()))
         return None, draws_left
     if train_deck_sprite.sprite.rect.collidepoint(event_pos):
         train_card = game.draw_card()
@@ -605,11 +612,13 @@ def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards
         for card in train_cards_action_sprites.sprites():
             if card.rect.collidepoint(event_pos):
                 if draws_left == 2 or (draws_left == 1 and card.color != ANY_COLOR):
+                    print(game.turn, card.color, len(train_cards_action_sprites.sprites()))
                     game.draw_card(card.color)
                     game.get_current_player().add_card(card.color)
                     if card.color == ANY_COLOR:
                         return card.color, draws_left - 2
                     return card.color, draws_left - 1
+    print(len(train_cards_action_sprites.sprites()), "no clickies")
     return None, draws_left
 
 
