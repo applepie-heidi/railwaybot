@@ -89,13 +89,16 @@ class Button(pg.sprite.Sprite):
 
 
 class Text(pg.sprite.Sprite):
-    def __init__(self, text, color, size, x, y):
+    def __init__(self, text, color, size, x, y, center=False):
         pg.sprite.Sprite.__init__(self)
         font = pg.font.Font(None, size)
         self.text = text
         self.image = font.render(text, True, color)
         self.rect = self.image.get_rect()
-        self.rect.x = x - self.image.get_width() / 2
+        if center:
+            self.rect.x = x - self.image.get_width() / 2
+        else:
+            self.rect.x = x
         self.rect.y = y
 
     def update(self, delete=False):
@@ -230,9 +233,12 @@ def main():
     game = Game(BOARD_PATH, DESTINATION_CARDS_PATH, TRAIN_CARDS_PATH, SCORING_PATH)
 
     choose_button_text = Text("Choose the number of players", (0, 0, 0), BIG_TEXT_SIZE, screen.get_width() / 2,
-                              screen.get_height() / 2 - BIG_TEXT_SIZE)
+                              screen.get_height() / 2 - BIG_TEXT_SIZE, center=True)
     button_sprites = create_choose_players_num_buttons((screen.get_width() / 2, screen.get_height() / 2))
     button_sprites.add(choose_button_text)
+
+    current_player_text = None
+    current_player_text_sprite = pg.sprite.GroupSingle()
 
     minimum_destination_cards = 2
     destination_button_sprites = create_choose_destination_cards_buttons(
@@ -240,7 +246,7 @@ def main():
     clicked_destination_button_sprites = pg.sprite.Group()
     choose_destination_cards_text = Text(f"Choose a minimum of {minimum_destination_cards} cards", (0, 0, 0),
                                          BIG_TEXT_SIZE,
-                                         screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE)
+                                         screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE, center=True)
     destination_button_text_sprite = pg.sprite.GroupSingle()
     destination_button_text_sprite.add(choose_destination_cards_text)
     chosen_destination_button = Button(BUTTON_COLOR, BUTTON_SIZE_X, BUTTON_SIZE_X,
@@ -257,6 +263,9 @@ def main():
 
     board = load_image(BOARD_IMAGE_PATH)
     board = board.convert_alpha()
+    board_cover = pg.Surface(board.get_size())
+    board_cover = board_cover.convert_alpha()
+    board_cover.fill(SCREEN_COLOR)
 
     destination_cards_action_sprites, train_cards_action_sprites = create_decks_and_face_ups(
         screen.get_width(), screen.get_height(), board.get_width())
@@ -314,10 +323,10 @@ def main():
                                 destination_button_sprites.update(color=DESTINATION_COLOR)
                                 choose_destination_cards_text = Text(
                                     f"Choose a minimum of {minimum_destination_cards} cards", (0, 0, 0),
-                                    BIG_TEXT_SIZE, screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE)
+                                    BIG_TEXT_SIZE, screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE,
+                                    center=True)
                                 destination_button_text_sprite.add(choose_destination_cards_text)
                             if not game_setup:
-                                print("Game started")
                                 choosing_destinations = False
                         if destination:
                             if destination not in clicked_destination_button_sprites.sprites():
@@ -346,12 +355,17 @@ def main():
                             choosing_destinations = True
                             button_sprites.update(delete=True)
                             button_sprites.draw(screen)
+                            current_player_text = Text(game.get_current_player().color,
+                                                       COLORS_DICT[game.get_current_player().color], BIG_TEXT_SIZE,
+                                                       board.get_width() + BOARD_POSITION[0] + 20,
+                                                       BOARD_POSITION[1])
+                            current_player_text_sprite.add(current_player_text)
+                            print(current_player_text)
                             break
 
         if game.started:
             if choosing_destinations:
-                print(game.turn)
-
+                screen.blit(board_cover, BOARD_POSITION)
                 destination_button_text_sprite.draw(screen)
                 draw_destination_cards(destination_cards, screen, destination_button_sprites)
                 chosen_destination_button_sprite.draw(screen)
@@ -359,6 +373,7 @@ def main():
                 train_cards_action_sprites.draw(screen)
                 destination_cards_action_sprites.draw(screen)
                 screen.blit(board, BOARD_POSITION)
+            current_player_text_sprite.draw(screen)
         else:
             button_sprites.draw(screen)
         pg.display.update()
@@ -389,8 +404,11 @@ def railway_click(event_pos, masks):
 
 
 def is_click_inside_mask(click_pos, mask):
-    relative_pos = (click_pos[0] - BOARD_POSITION[0], click_pos[1] - BOARD_POSITION[1])
-    return mask.get_at(relative_pos)
+    try:
+        relative_pos = (click_pos[0] - BOARD_POSITION[0], click_pos[1] - BOARD_POSITION[1])
+        return mask.get_at(relative_pos)
+    except IndexError:
+        return False
 
 
 def board_with_masks(screen, board, mask_image):
