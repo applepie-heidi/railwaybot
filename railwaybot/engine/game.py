@@ -196,18 +196,13 @@ class Game:
                 else:
                     player.remove_points(destination_card.points)
 
-    def play(self, player_path, num_players):
-        self.set_up_game(player_path, num_players)
-        self.started = True
+    def get_current_player(self):
+        return self.players[self.turn]
 
-    def set_up_game(self, player_colors, trains_per_player, num_players):
-        for i in range(num_players):
-            player = Player(player_colors[i], trains_per_player)
-            self.add_player(player)
-            for j in range(CARDS_DRAW_INITIAL):
-                card = self.draw_card()
-                player.add_card(card)
-            destination_cards = self.draw_destination_cards()
+    def next_turn(self):
+        self.turn = (self.turn + 1) % len(self.players)
+        if self.turn == 0:
+            self.round += 1
 
 
 if __name__ == '__main__':
