@@ -47,7 +47,6 @@ BOARD_IMAGE_PATH = "data/images/board.png"
 DESTINATION_DECK_PATH = "data/images/destination_back.png"
 TRAIN_DECK_PATH = "data/images/train_back.png"
 TRAIN_EMPTY_PATH = "data/images/train_empty.png"
-BOARD_POSITION = (10, 10)
 COLORS_DICT, TRAINS = parse_player_json()
 COLORS_LIST = get_shuffled_colors(COLORS_DICT)
 TRAIN_IMAGES_DICT = parse_train_images()
@@ -59,7 +58,9 @@ BUTTON_SIZE_X = 100
 BIG_TEXT_SIZE = 100
 SMALL_TEXT_SIZE = 30
 MINI_TEXT_SIZE = 20
+BOARD_POSITION = (10, 10)
 DESTINATION_SIZE = (350, 100)
+ROUTE_MAX_LENGTH = 6
 
 
 class Button(pg.sprite.Sprite):
@@ -141,7 +142,6 @@ class FaceUpCard(pg.sprite.Sprite):
         self.color = None
         self.image = load_image(image_path, scale=0.7)
         self.image = self.image.convert_alpha()
-        self.image.fill(BUTTON_COLOR)
         self.rect = self.image.get_rect()
 
     def update(self, delete=False, color=None, image_path=None):
@@ -149,7 +149,7 @@ class FaceUpCard(pg.sprite.Sprite):
             self.color = None
             self.image.fill(SCREEN_COLOR)
         else:
-            if color and image_path:
+            if image_path:
                 self.color = color
                 self.image = load_image(image_path, scale=0.7)
                 self.image = self.image.convert_alpha()
@@ -271,9 +271,19 @@ def create_mini_cards(screen_y):
     return mini_card_sprites
 
 
+def create_route_claiming_cards(screen_y, board_y):
+    route_claiming_cards_sprites = pg.sprite.Group()
+    for i in range(ROUTE_MAX_LENGTH):
+        card = FaceUpCard(TRAIN_EMPTY_PATH)
+        card.rect.x = BOARD_POSITION[0] + 300 + card.rect.width / 2 + ((i % 3) * (card.rect.width + 10))
+        card.rect.y = board_y + BOARD_POSITION[1] + 10 + (i // 3) * (card.rect.height + 10)
+        route_claiming_cards_sprites.add(card)
+    return route_claiming_cards_sprites
+
+
 def main():
     pg.init()
-    screen = pg.display.set_mode((1400, 1050), pg.SCALED)
+    screen = pg.display.set_mode((1400, 1070), pg.SCALED)
     pg.display.set_caption("Ticket to Ride")
 
     screen.fill(SCREEN_COLOR)
@@ -330,6 +340,9 @@ def main():
 
     mini_cards_sprites = create_mini_cards(screen.get_height())
     mini_numbers_sprites = pg.sprite.Group()
+
+    route_claiming_cards_sprites = create_route_claiming_cards(screen.get_height(), board.get_height())
+    clicked_route_claiming_cards_sprites = pg.sprite.Group()
 
     all_game_turn_sprites = pg.sprite.Group()
     all_game_turn_sprites.add(scores_text_sprites, chosen_destinations_text_sprites, destination_deck_sprite,
@@ -413,12 +426,17 @@ def main():
 
                     elif turn_action:
 
-                        destination_cards = destination_deck_click(game, event.pos, destination_deck_sprite,
-                                                                   destination_cards)
                         train_card, draws_left = train_card_click(game, event.pos, draws_left, train_deck_sprite,
-                                                      train_cards_action_sprites, )
+                                                                  train_cards_action_sprites)
+                        destination_cards = []
+                        mini_card = None
+                        if draws_left == 2:
+                            destination_cards = destination_deck_click(game, event.pos, destination_deck_sprite,
+                                                                       destination_cards)
+                            mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
+                                                        clicked_route_claiming_cards_sprites)
 
-                        if destination_cards and draws_left == 2:
+                        if destination_cards and not clicked_route_claiming_cards_sprites.sprites():
                             choosing_destinations = True
                             turn_action = False
                             destination_cards = game.draw_destination_cards()
@@ -428,12 +446,12 @@ def main():
                                 BIG_TEXT_SIZE, screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE,
                                 center=True)
                             destination_button_text_sprite.add(choose_destination_cards_text)
-                        elif train_card:
+                        elif train_card and not clicked_route_claiming_cards_sprites.sprites():
                             draw_mini_numbers(screen, game.get_current_player(), mini_numbers_sprites,
                                               all_game_turn_sprites,
                                               mini_cards_sprites.sprites()[0].rect.width)
+                            turn_face_up_cards(game, train_cards_action_sprites, TRAIN_IMAGES_DICT)
                             if draws_left == 0:
-                                turn_face_up_cards(game, train_cards_action_sprites, TRAIN_IMAGES_DICT)
                                 game.next_turn()
                                 switch_player_text(screen, game, board, current_player_text_sprite)
                                 draws_left = 2
@@ -441,10 +459,15 @@ def main():
                                 train_deck_sprite.update(draw=True)
                                 mini_cards_sprites.update(draw=True)
                             pass
-                    else:
-                        image_name = railway_click(event.pos, railway_masks)
-                        if image_name:
-                            board = board_with_masks(screen, board, railway_images[image_name])
+                        elif mini_card:
+                            add_to_clicked_route_claiming_cards_sprites(mini_card,
+                                                                        clicked_route_claiming_cards_sprites,
+                                                                        route_claiming_cards_sprites)
+                            # image_name = railway_click(event.pos, railway_masks)
+                            # if image_name:
+                            #    board = board_with_masks(screen, board, railway_images[image_name])
+                        elif clicked_route_claiming_cards_sprites.sprites():
+                            pass
                 else:
                     for i in range(len(button_sprites.sprites())):
                         if button_sprites.sprites()[i].rect.collidepoint(event.pos):
@@ -458,7 +481,6 @@ def main():
                                                        board.get_width() + BOARD_POSITION[0] + 20,
                                                        BOARD_POSITION[1])
                             current_player_text_sprite.add(current_player_text)
-                            print(current_player_text)
                             break
 
         if game.started:
@@ -481,11 +503,21 @@ def main():
                 mini_cards_sprites.draw(screen)
                 draw_mini_numbers(screen, game.get_current_player(), mini_numbers_sprites, all_game_turn_sprites,
                                   mini_cards_sprites.sprites()[0].rect.width)
+                route_claiming_cards_sprites.draw(screen)
             current_player_text_sprite.draw(screen)
         else:
             button_sprites.draw(screen)
         pg.display.update()
         clock.tick(60)
+
+
+def add_to_clicked_route_claiming_cards_sprites(card, clicked_route_claiming_cards_sprites,
+                                                route_claiming_cards_sprites):
+    for sprite in route_claiming_cards_sprites.sprites():
+        if not sprite.color:
+            sprite.update(color=card.color, image_path=TRAIN_IMAGES_DICT[card.color])
+            clicked_route_claiming_cards_sprites.add(sprite)
+            break
 
 
 def draw_mini_numbers(screen, player, mini_numbers_sprites, all_game_turn_sprites, mini_width):
@@ -550,6 +582,16 @@ def draw_destination_cards(destination_cards, screen, destination_button_sprites
     for button, card in zip(destination_button_sprites.sprites(), destination_cards):
         button.add_text(str(card), SMALL_TEXT_SIZE, 40)
     destination_button_sprites.draw(screen)
+
+
+def mini_card_click(event_pos, game, mini_cards_sprites, clicked_route_claiming_cards_sprites, ):
+    if len(clicked_route_claiming_cards_sprites.sprites()) <= ROUTE_MAX_LENGTH:
+        for card in mini_cards_sprites.sprites():
+            if card.rect.collidepoint(event_pos):
+                if card.color in game.get_current_player().cards:
+                    game.get_current_player().remove_card(card.color)
+                    return card
+    return None
 
 
 def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards_action_sprites):
