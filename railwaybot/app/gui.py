@@ -345,7 +345,7 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 done = True
-            elif event.type == pg.MOUSEBUTTONDOWN:
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
                 if game.started:
                     if choosing_destinations:
                         destinations_chosen = False
@@ -557,13 +557,14 @@ def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards
         return None, draws_left
     if train_deck_sprite.sprite.rect.collidepoint(event_pos):
         train_card = game.draw_card()
+        game.get_current_player().add_card(train_card)
         return train_card, draws_left - 1
     else:
         for card in train_cards_action_sprites.sprites():
             if card.rect.collidepoint(event_pos):
                 if draws_left == 2 or (draws_left == 1 and card.color != ANY_COLOR):
                     game.draw_card(card.color)
-                    turn_face_up_cards(game, train_cards_action_sprites, TRAIN_IMAGES_DICT)
+                    game.get_current_player().add_card(card.color)
                     if card.color == ANY_COLOR:
                         return card.color, draws_left - 2
                     return card.color, draws_left - 1
