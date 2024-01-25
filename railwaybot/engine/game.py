@@ -150,29 +150,34 @@ class Game:
         for card in cards:
             self.destination_cards.insert(0, card)
 
-    def draw_card(self, face_up_id=None):
-        if len(self.cards) > 0:
-            if face_up_id:
-                card = self.face_up_cards.pop(face_up_id)
+    def draw_card(self, face_up_color=None):
+        if self.cards:
+            if face_up_color:
+                self.face_up_cards.remove(face_up_color)
                 self.turn_cards_face_up()
-                return card
+                return face_up_color
             else:
                 return self.cards.pop()
+        return None
 
     def turn_cards_face_up(self):
-        while len(self.face_up_cards) < CARDS_FACE_UP:
-            if len(self.cards) == 0:
-                if len(self.discarded_cards) == 0:
-                    return
-                self.cards = self.discarded_cards
-                self.discarded_cards = []
-                random.shuffle(self.cards)
-            self.face_up_cards.append(self.cards.pop())
-        cards_dict = {i: self.face_up_cards.count(i) for i in self.face_up_cards}
-        if ANY_COLOR in cards_dict:
-            if cards_dict[ANY_COLOR] >= 3:
-                self.face_up_cards.remove(ANY_COLOR)
-                self.cards.append(ANY_COLOR)
+        turning = True
+        while turning:
+            turning = False
+            while len(self.face_up_cards) < CARDS_FACE_UP:
+                if len(self.cards) == 0:
+                    if len(self.discarded_cards) == 0:
+                        return
+                    self.cards = self.discarded_cards
+                    self.discarded_cards = []
+                    random.shuffle(self.cards)
+                self.face_up_cards.append(self.cards.pop())
+            cards_dict = {i: self.face_up_cards.count(i) for i in self.face_up_cards}
+            if ANY_COLOR in cards_dict:
+                if cards_dict[ANY_COLOR] >= 3:
+                    turning = True
+                    self.discarded_cards.extend(self.face_up_cards)
+                    self.face_up_cards = []
 
     def claim_railway(self, player, city1, city2, color, cards):
         railway = self.board.get_city(city1).get_unclaimed_railway(city1, city2, color)
