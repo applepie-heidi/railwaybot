@@ -110,6 +110,10 @@ class Deck(pg.sprite.Sprite):
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
 
+    def update(self, delete=False):
+        if delete:
+            self.image.fill(SCREEN_COLOR)
+
 
 class FaceUpCard(pg.sprite.Sprite):
     def __init__(self, image_path):
@@ -117,7 +121,15 @@ class FaceUpCard(pg.sprite.Sprite):
         self.image = load_image(image_path, scale=0.7)
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
-        self.image.fill(BUTTON_COLOR)
+
+    def update(self, delete=False, image_path=None):
+        if delete:
+            self.image.fill(SCREEN_COLOR)
+        else:
+            if image_path:
+                self.image = load_image(image_path, scale=0.7)
+                self.image = self.image.convert_alpha()
+                self.rect = self.image.get_rect()
 
 
 def load_railway_images(image_directory):
@@ -272,8 +284,6 @@ def main():
                         if len(clicked_destination_button_sprites.sprites()) >= minimum_destination_cards:
                             destinations_chosen = choose_destination_click(event.pos, chosen_destination_button)
                         if destinations_chosen:
-                            minimum_destination_cards = 1
-                            choosing_destinations = False
                             all_destination_sprites.update(delete=True)
                             all_destination_sprites.draw(screen)
 
@@ -293,12 +303,19 @@ def main():
                                     destination_cards.remove(card3)
                             game.discard_destination_cards(destination_cards)
                             destination_cards = []
+                            clicked_destination_button_sprites.empty()
 
                             game.next_turn()
                             if game.turn == 0 and game_setup:
+                                minimum_destination_cards = 1
                                 game_setup = False
                             elif game.turn != 0 and game_setup:
                                 destination_cards = game.draw_destination_cards()
+                                destination_button_sprites.update(color=DESTINATION_COLOR)
+                                choose_destination_cards_text = Text(
+                                    f"Choose a minimum of {minimum_destination_cards} cards", (0, 0, 0),
+                                    BIG_TEXT_SIZE, screen.get_width() / 2, screen.get_height() / 2 - BIG_TEXT_SIZE)
+                                destination_button_text_sprite.add(choose_destination_cards_text)
                             if not game_setup:
                                 print("Game started")
                                 choosing_destinations = False
@@ -332,8 +349,9 @@ def main():
                             break
 
         if game.started:
-            #print(game.turn)
             if choosing_destinations:
+                print(game.turn)
+
                 destination_button_text_sprite.draw(screen)
                 draw_destination_cards(destination_cards, screen, destination_button_sprites)
                 chosen_destination_button_sprite.draw(screen)
