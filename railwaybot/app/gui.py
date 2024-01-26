@@ -124,7 +124,7 @@ class Deck(pg.sprite.Sprite):
     def __init__(self, image_path):
         pg.sprite.Sprite.__init__(self)
         self.image_path = image_path
-        self.image = load_image(image_path, scale=0.7)
+        self.image = load_image(image_path, scale=0.5)
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
 
@@ -132,7 +132,7 @@ class Deck(pg.sprite.Sprite):
         if delete:
             self.image.fill(SCREEN_COLOR)
         if draw:
-            self.image = load_image(self.image_path, scale=0.7)
+            self.image = load_image(self.image_path, scale=0.5)
             self.image = self.image.convert_alpha()
 
 
@@ -140,7 +140,7 @@ class FaceUpCard(pg.sprite.Sprite):
     def __init__(self, image_path):
         pg.sprite.Sprite.__init__(self)
         self.color = None
-        self.image = load_image(image_path, scale=0.7)
+        self.image = load_image(image_path, scale=0.5)
         self.image = self.image.convert_alpha()
         self.rect = self.image.get_rect()
 
@@ -151,7 +151,7 @@ class FaceUpCard(pg.sprite.Sprite):
         else:
             if image_path:
                 self.color = color
-                self.image = load_image(image_path, scale=0.7)
+                self.image = load_image(image_path, scale=0.5)
                 self.image = self.image.convert_alpha()
 
 
@@ -265,7 +265,7 @@ def create_mini_cards(screen_y):
     mini_card_sprites = pg.sprite.Group()
     for color in TRAIN_COLORS_LIST:
         mini_card = MiniCard(color, TRAIN_IMAGES_DICT[color])
-        mini_card.rect.x = BOARD_POSITION[0] + 300 + (TRAIN_COLORS_LIST.index(color) * (mini_card.rect.width + 10))
+        mini_card.rect.x = BOARD_POSITION[0] + 250 + (TRAIN_COLORS_LIST.index(color) * (mini_card.rect.width + 10))
         mini_card.rect.y = screen_y - mini_card.rect.height - BOARD_POSITION[1] - MINI_TEXT_SIZE - 10
         mini_card_sprites.add(mini_card)
     return mini_card_sprites
@@ -275,7 +275,7 @@ def create_route_claiming_cards(screen_y, board_y):
     route_claiming_cards_sprites = pg.sprite.Group()
     for i in range(ROUTE_MAX_LENGTH):
         card = FaceUpCard(TRAIN_EMPTY_PATH)
-        card.rect.x = BOARD_POSITION[0] + 300 + card.rect.width / 2 + ((i % 3) * (card.rect.width + 10))
+        card.rect.x = BOARD_POSITION[0] + 300 + card.rect.width + ((i % 3) * (card.rect.width + 10))
         card.rect.y = board_y + BOARD_POSITION[1] + 10 + (i // 3) * (card.rect.height + 10)
         route_claiming_cards_sprites.add(card)
     return route_claiming_cards_sprites
@@ -283,7 +283,7 @@ def create_route_claiming_cards(screen_y, board_y):
 
 def main():
     pg.init()
-    screen = pg.display.set_mode((1400, 1070), pg.SCALED)
+    screen = pg.display.set_mode((1300, 1000), pg.SCALED)
     pg.display.set_caption("Ticket to Ride")
 
     screen.fill(SCREEN_COLOR)
@@ -436,7 +436,7 @@ def main():
                                                                        destination_cards)
                             if draws_left == 2:
                                 mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
-                                                        clicked_route_claiming_cards_sprites)
+                                                            clicked_route_claiming_cards_sprites)
                         else:
                             mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
                                                         clicked_route_claiming_cards_sprites)
@@ -535,7 +535,7 @@ def draw_mini_numbers(screen, player, mini_numbers_sprites, all_game_turn_sprite
             cards_dict[card] += 1
     for color in cards_dict:
         text = Text(str(cards_dict[color]), (0, 0, 0), MINI_TEXT_SIZE,
-                    BOARD_POSITION[0] + 300 + TRAIN_COLORS_LIST.index(color) * (mini_width + 10) + mini_width / 2,
+                    BOARD_POSITION[0] + 250 + TRAIN_COLORS_LIST.index(color) * (mini_width + 10) + mini_width / 2,
                     screen.get_height() - BOARD_POSITION[1] - MINI_TEXT_SIZE)
         mini_numbers_sprites.add(text)
     mini_numbers_sprites.draw(screen)
@@ -570,7 +570,6 @@ def draw_chosen_destinations_text(game, board, chosen_destinations_text_sprites,
 
 def turn_face_up_cards(game, train_cards_action_sprites, train_images_dict):
     for card, face_up_card in zip(game.face_up_cards, train_cards_action_sprites.sprites()):
-
         face_up_card.update(color=card, image_path=train_images_dict[card])
 
 
