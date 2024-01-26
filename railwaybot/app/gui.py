@@ -428,6 +428,7 @@ def main():
                         train_card = None
                         destination_cards = []
                         mini_card = None
+                        route_claiming_card = None
 
                         if not clicked_route_claiming_cards_sprites.sprites():
                             train_card, draws_left = train_card_click(game, event.pos, draws_left, train_deck_sprite,
@@ -440,6 +441,8 @@ def main():
                         else:
                             mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
                                                         clicked_route_claiming_cards_sprites)
+                            route_claiming_card = route_claiming_cards_click(event.pos,
+                                                                             clicked_route_claiming_cards_sprites)
 
                         if destination_cards:
                             choosing_destinations = True
@@ -471,8 +474,10 @@ def main():
                             # image_name = railway_click(event.pos, railway_masks)
                             # if image_name:
                             #    board = board_with_masks(screen, board, railway_images[image_name])
-                        elif clicked_route_claiming_cards_sprites.sprites():
-                            pass
+                        elif route_claiming_card:
+                            clicked_route_claiming_cards_sprites.remove(route_claiming_card)
+                            game.get_current_player().add_card(route_claiming_card.color)
+                            route_claiming_card.update(delete=True)
                 else:
                     for i in range(len(button_sprites.sprites())):
                         if button_sprites.sprites()[i].rect.collidepoint(event.pos):
@@ -589,6 +594,13 @@ def draw_destination_cards(destination_cards, screen, destination_button_sprites
     destination_button_sprites.draw(screen)
 
 
+def route_claiming_cards_click(event_pos, clicked_route_claiming_cards_sprites):
+    for card in clicked_route_claiming_cards_sprites.sprites():
+        if card.rect.collidepoint(event_pos):
+            return card
+    return None
+
+
 def mini_card_click(event_pos, game, mini_cards_sprites, clicked_route_claiming_cards_sprites, ):
     if len(clicked_route_claiming_cards_sprites.sprites()) <= ROUTE_MAX_LENGTH:
         for card in mini_cards_sprites.sprites():
@@ -601,7 +613,6 @@ def mini_card_click(event_pos, game, mini_cards_sprites, clicked_route_claiming_
 
 def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards_action_sprites):
     if len(train_cards_action_sprites.sprites()) < 5:
-        print(len(train_cards_action_sprites.sprites()))
         return None, draws_left
     if train_deck_sprite.sprite.rect.collidepoint(event_pos):
         train_card = game.draw_card()
@@ -617,7 +628,6 @@ def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards
                     if card.color == ANY_COLOR:
                         return card.color, draws_left - 2
                     return card.color, draws_left - 1
-    print(len(train_cards_action_sprites.sprites()), "no clickies")
     return None, draws_left
 
 
