@@ -17,5 +17,5 @@ def global_board(board):
 
 def test_can_create_board(board):
     assert board is not None
-    assert len(board.board) == 36
+    assert len(board.cities) == 36
 

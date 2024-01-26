@@ -1,6 +1,6 @@
 import json
 
-
+'''
 class City:
     def __init__(self, name):
         self.name = name
@@ -29,6 +29,8 @@ class City:
                 if railway.city1 == temp[0] and railway.city2 == temp[1] and not railway.claimed:
                     return railway
 
+'''
+
 
 class Railway:
     def __init__(self, city1, city2, length, color):
@@ -39,19 +41,19 @@ class Railway:
         self.claimed = False
 
     def __str__(self):
-        return self.city1.name + " - " + self.city2.name + " (" + str(self.length) + ", " + self.color + ")"
+        return self.city1 + " - " + self.city2 + " (" + str(self.length) + ", " + self.color + ")"
 
 
 class Board:
     def __init__(self, path):
-        self.board = {}
+        self.cities = []
         self.all_railways = []
         self.__make(path)
 
     def __str__(self):
         board_str = ""
-        for city in self.board:
-            board_str += str(self.board[city]) + "\n"
+        for city in self.cities:
+            board_str += city + "\n"
         return board_str
 
     def __make(self, path):
@@ -61,19 +63,33 @@ class Board:
                 name = city_data["name"]
                 self.add_city(name)
             for railway_data in data["railways"]:
-                city1 = self.get_city(railway_data["city1"])
-                city2 = self.get_city(railway_data["city2"])
-                railway = Railway(city1, city2, railway_data["length"], railway_data["color"])
+                city1 = railway_data["city1"]
+                city2 = railway_data["city2"]
+                length = railway_data["length"]
+                color = railway_data["color"]
+                railway = Railway(city1, city2, length, color)
                 self.all_railways.append(railway)
-                city1.add_railway(railway)
-                city2.add_railway(railway)
 
     def add_city(self, name):
-        city = City(name)
-        self.board[name] = city
+        self.cities.append(name)
 
-    def get_city(self, name):
-        return self.board[name]
+    def get_railways(self, city1, city2, color):
+        temp = [city1, city2]
+        temp.sort()
+        railways = []
+        for railway in self.all_railways:
+            if railway.city1 == temp[0] and railway.city2 == temp[1] and railway.color == color:
+                railways.append(railway)
+        return railways
+
+    def get_unclaimed_railway(self, city1, city2, color):
+        temp = [city1, city2]
+        temp.sort()
+        for railway in self.all_railways:
+            if (railway.city1 == temp[0] and railway.city2 == temp[1]
+                    and railway.color == color and not railway.claimed):
+                return railway
+        return None
 
 
 if __name__ == '__main__':

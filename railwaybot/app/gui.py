@@ -1,5 +1,5 @@
 from __future__ import annotations
-from typing import Tuple
+
 import json
 import os
 import random
@@ -7,7 +7,7 @@ import random
 import pygame as pg
 from pygame import PixelArray
 
-from engine.game import Game, Player, ANY_COLOR
+from engine.game import Game, Player, ANY_COLOR, CARDS_DRAW_INITIAL
 
 
 def parse_player_json():
@@ -207,6 +207,12 @@ def create_players(game, players_num):
     for i in range(players_num):
         player = Player(COLORS_LIST[i], TRAINS)
         game.add_player(player)
+
+
+def deal_cards(game):
+    for player in game.players:
+        for i in range(CARDS_DRAW_INITIAL):
+            player.add_card(game.draw_card())
 
 
 def create_choose_players_num_buttons(button_position):
@@ -429,6 +435,7 @@ def main():
                         destination_cards = []
                         mini_card = None
                         route_claiming_card = None
+                        railway_name = None
 
                         if not clicked_route_claiming_cards_sprites.sprites():
                             train_card, draws_left = train_card_click(game, event.pos, draws_left, train_deck_sprite,
@@ -439,10 +446,13 @@ def main():
                                 mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
                                                             clicked_route_claiming_cards_sprites)
                         else:
+                            print("clicked route cards")
                             mini_card = mini_card_click(event.pos, game, mini_cards_sprites,
                                                         clicked_route_claiming_cards_sprites)
                             route_claiming_card = route_claiming_cards_click(event.pos,
                                                                              clicked_route_claiming_cards_sprites)
+                            railway_name = railway_click(event.pos, railway_masks)
+                            print(railway_name)
 
                         if destination_cards:
                             choosing_destinations = True
@@ -471,17 +481,32 @@ def main():
                             add_to_clicked_route_claiming_cards_sprites(mini_card,
                                                                         clicked_route_claiming_cards_sprites,
                                                                         route_claiming_cards_sprites)
-                            # image_name = railway_click(event.pos, railway_masks)
-                            # if image_name:
-                            #    board = board_with_masks(screen, board, railway_images[image_name])
                         elif route_claiming_card:
                             clicked_route_claiming_cards_sprites.remove(route_claiming_card)
                             game.get_current_player().add_card(route_claiming_card.color)
                             route_claiming_card.update(delete=True)
+                        elif railway_name:
+                            city1 = railway_name[0]
+                            city2 = railway_name[1]
+                            color = railway_name[2]
+                            railway = game.board.get_unclaimed_railway(city1, city2, color)
+                            print("---")
+                            for r in game.board.all_railways:
+                                print(r)
+                            print("---")
+                            print(railway)
+                            if railway:
+                                if railway.length == len(clicked_route_claiming_cards_sprites.sprites()):
+                                    count_dict = {i: clicked_route_claiming_cards_sprites.sprites().count(i) for i in
+                                                  clicked_route_claiming_cards_sprites.sprites()}
+                                    print(color, count_dict)
+                                    if color in count_dict:
+                                        board = board_with_masks(screen, board, railway_images[image_name])
                 else:
                     for i in range(len(button_sprites.sprites())):
                         if button_sprites.sprites()[i].rect.collidepoint(event.pos):
                             create_players(game, i + 2)
+                            deal_cards(game)
                             game.started = True
                             choosing_destinations = True
                             button_sprites.update(delete=True)
@@ -622,7 +647,6 @@ def train_card_click(game, event_pos, draws_left, train_deck_sprite, train_cards
         for card in train_cards_action_sprites.sprites():
             if card.rect.collidepoint(event_pos):
                 if draws_left == 2 or (draws_left == 1 and card.color != ANY_COLOR):
-                    print(game.turn, card.color, len(train_cards_action_sprites.sprites()))
                     game.draw_card(card.color)
                     game.get_current_player().add_card(card.color)
                     if card.color == ANY_COLOR:

@@ -179,18 +179,17 @@ class Game:
                     self.discarded_cards.extend(self.face_up_cards)
                     self.face_up_cards = []
 
-    def claim_railway(self, player, city1, city2, color, cards):
-        railway = self.board.get_city(city1).get_unclaimed_railway(city1, city2, color)
-        player.remove_trains(railway.length)
-        player.add_points(self.scoring[railway.length])
-        player.add_railway(railway)
+    def claim_railway(self, railway, cards, parallel_railway=None):
+        current_player = self.get_current_player()
+        current_player.remove_trains(railway.length)
+        current_player.add_points(self.scoring[railway.length])
+        current_player.add_railway(railway)
         railway.claimed = True
         for card in cards:
-            player.remove_card(card)
+            current_player.remove_card(card)
             self.discarded_cards.append(card)
-        if len(self.players) <= 3:
-            railway = self.board.get_city(city1).get_unclaimed_railway(city1, city2)
-            railway.claimed = True
+        if parallel_railway:
+            parallel_railway.claimed = True
 
     def final_scoring(self):
         for player in self.players:
