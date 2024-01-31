@@ -25,7 +25,10 @@ class DestinationChooserScene(Scene):
     def _add(self):
         text = Text(f"Choose a minimum of {self.minimum_selected} cards", (0, 0, 0), BIG_TEXT_SIZE,
                     SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - BIG_TEXT_SIZE, center=True)
+        player_text = Text(f"Player {self.current_player.color.upper()}", COLORS_DICT[self.current_player.color], BIG_TEXT_SIZE,
+                           SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - 2 * BIG_TEXT_SIZE, center=True)
         self.text_group.add(text)
+        self.text_group.add(player_text)
 
         self.ok_button = Button(BUTTON_COLOR, BUTTON_SIZE_X, BUTTON_SIZE_X,
                                 SCREEN_SIZE[0] / 2 + DESTINATION_SIZE[0],
