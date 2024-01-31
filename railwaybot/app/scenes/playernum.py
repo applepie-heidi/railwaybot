@@ -1,6 +1,7 @@
 import pygame as pg
 
 from app.components.buttons import PlayerNumberButtonGroup, Button
+from app.components.text import Text, TextGroup
 from app.config import *
 from app.scenes.scene import Scene
 from engine.game import Player
@@ -10,10 +11,15 @@ class NumberOfPlayersScene(Scene):
     def __init__(self, game):
         super().__init__()
         self.game = game
+        self.text_group = TextGroup()
         self.button_group = PlayerNumberButtonGroup()
-        self._add_buttons()
+        self._add()
 
-    def _add_buttons(self):
+    def _add(self):
+        self.text = Text("Choose the number of players", (0, 0, 0), BIG_TEXT_SIZE,
+                         SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - BIG_TEXT_SIZE, center=True)
+        self.text_group.add(self.text)
+
         button_position_x = SCREEN_SIZE[0] / 2 - (MAX_PLAYERS - 1) * (BUTTON_SIZE_X + PADDING)
         button_position_y = SCREEN_SIZE[1] / 2
         for i in range(2, MAX_PLAYERS + 1):
@@ -35,6 +41,7 @@ class NumberOfPlayersScene(Scene):
         background.convert()
         background.fill(SCREEN_COLOR)
         screen.blit(background, (0, 0))
+        self.text_group.draw(screen)
         self.button_group.draw(screen)
 
     @property

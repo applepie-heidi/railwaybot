@@ -64,6 +64,7 @@ ROUTE_MAX_LENGTH = 6
 CARDS_DRAW_INITIAL = 4
 CARDS_DRAW = 2
 
+
 class Button(pg.sprite.Sprite):
     def __init__(self, color, width, height, x, y, text=None, text_size=0, text_y=0):
         pg.sprite.Sprite.__init__(self)

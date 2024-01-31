@@ -99,8 +99,8 @@ class ToggleButtonGroup(pg.sprite.Group):
 
 
 class OkButtonGroup(pg.sprite.GroupSingle):
-    def __init__(self, ok_button):
-        super().__init__(ok_button)
+    def __init__(self):
+        super().__init__()
         self._clicked = False
 
     def add(self, *buttons: Button):
