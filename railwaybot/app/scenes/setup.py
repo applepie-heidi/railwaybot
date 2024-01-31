@@ -1,30 +1,38 @@
 from app.scenes.dest import DestinationChooserScene
 from app.scenes.playernum import NumberOfPlayersScene
 from app.scenes.scene import Scene
-from app.config import CARDS_DRAW_INITIAL
+from app.config import *
 
 
 class SetupScene(Scene):
     def __init__(self, game):
         super().__init__()
         self.game = game
-        self.number_of_players = 0
-        self.player_towns = []
+        self.players_setup = 0
+        self._finished = False
         self.scene = NumberOfPlayersScene(game)
 
     def handle_click(self, pos):
         self.scene.handle_click(pos)
-        if self.game.players:
-            if type(self.scene) is NumberOfPlayersScene:
-                self.scene = DestinationChooserScene(self.game)
-            elif self.scene.is_finished():
-                for player in self.game.players:
-                    for i in range(CARDS_DRAW_INITIAL):
-                        player.add_card(self.game.draw_card())
+        if isinstance(self.scene, NumberOfPlayersScene) and self.scene.is_finished:
+            for player in self.game.players:
+                for i in range(CARDS_DRAW_INITIAL):
+                    player.add_card(self.game.draw_card())
+            destinations = self.game.draw_destination_cards()
+            self.scene = DestinationChooserScene(self.game, destinations, MINIMUM_DESTINATION_CARDS_INITIAL,
+                                                 current_player=self.game.players[self.players_setup])
+        elif isinstance(self.scene, DestinationChooserScene) and self.scene.is_finished:
+            self.players_setup += 1
+            if self.players_setup == len(self.game.players):
+                self._finished = True
+            else:
+                destinations = self.game.draw_destination_cards()
+                self.scene = DestinationChooserScene(self.game, destinations, MINIMUM_DESTINATION_CARDS_INITIAL,
+                                                     current_player=self.game.players[self.players_setup])
 
     def draw(self, screen):
         self.scene.draw(screen)
 
     @property
     def is_finished(self):
-        return bool(self.game.players) and all(player.towns for player in self.game.players)
+        return self._finished

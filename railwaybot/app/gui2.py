@@ -4,23 +4,24 @@ import pygame as pg
 
 from app.scenes.dest import DestinationChooserScene
 from app.scenes.main import MainScene
+from app.scenes.setup import SetupScene
+from app.config import *
+from engine.game import Game
 
 
 def main():
     pg.init()
-    screen = pg.display.set_mode((1300, 1000), pg.SCALED)
+    screen = pg.display.set_mode(SCREEN_SIZE, pg.SCALED)
     pg.display.set_caption("Ticket to Ride")
 
-    screen.fill((255, 255, 255))
+    game = Game(BOARD_PATH, DESTINATION_CARDS_PATH, TRAIN_CARDS_PATH, SCORING_PATH)
 
     clock = pg.time.Clock()
 
     done = False
-    scene1 = DestinationChooserScene(None, "red", ["City 1", "City 2", "City 3"])
-    scene2 = DestinationChooserScene(None, "green", ["Grad 1", "Grad 2", "Grad 3"])
-    main_scene = MainScene(None)
+    main_scene = MainScene(game)
 
-    current_scene = scene1
+    current_scene = SetupScene(game)
 
     while not done:
         for event in pg.event.get():
@@ -31,11 +32,7 @@ def main():
                     current_scene.handle_click(event.pos)
 
             if current_scene and current_scene.is_finished:
-                # Switch to the next scene
-                # TODO: Definition of "next" remains to be defined
-                if current_scene is scene1:
-                    current_scene = scene2
-                elif current_scene is scene2:
+                if isinstance(current_scene, SetupScene):
                     current_scene = main_scene
 
         if done:

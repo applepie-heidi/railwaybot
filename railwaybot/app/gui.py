@@ -7,7 +7,7 @@ import random
 import pygame as pg
 from pygame import PixelArray
 
-from engine.game import Game, Player, ANY_COLOR, CARDS_DRAW_INITIAL
+from engine.game import Game, Player, ANY_COLOR
 
 
 def parse_player_json():
@@ -61,7 +61,8 @@ MINI_TEXT_SIZE = 20
 BOARD_POSITION = (10, 10)
 DESTINATION_SIZE = (350, 100)
 ROUTE_MAX_LENGTH = 6
-
+CARDS_DRAW_INITIAL = 4
+CARDS_DRAW = 2
 
 class Button(pg.sprite.Sprite):
     def __init__(self, color, width, height, x, y, text=None, text_size=0, text_y=0):
