@@ -73,7 +73,7 @@ class PlayerNumberButtonGroup(pg.sprite.Group):
             if button.rect.collidepoint(pos):
                 self.clicked = button.text
 
-    def get_clicked(self):
+    def get_clicked_text(self):
         return self.clicked
 
 

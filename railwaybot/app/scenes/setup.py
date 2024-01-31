@@ -15,9 +15,7 @@ class SetupScene(Scene):
     def handle_click(self, pos):
         self.scene.handle_click(pos)
         if isinstance(self.scene, NumberOfPlayersScene) and self.scene.is_finished:
-            for player in self.game.players:
-                for i in range(CARDS_DRAW_INITIAL):
-                    player.add_card(self.game.draw_card())
+            self.game.deal_initial_cards(CARDS_DRAW_INITIAL)
             destinations = self.game.draw_destination_cards()
             self.scene = DestinationChooserScene(self.game, destinations, MINIMUM_DESTINATION_CARDS_INITIAL,
                                                  current_player=self.game.players[self.players_setup])

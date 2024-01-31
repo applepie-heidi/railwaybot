@@ -3,7 +3,6 @@ import random
 
 from .board import Board, Railway
 
-
 DESTINATION_CARDS_DRAW = 3
 CARDS_FACE_UP = 5
 ANY_COLOR = "any"
@@ -139,6 +138,11 @@ class Game:
     def add_player(self, player):
         self.players.append(player)
 
+    def add_players(self, names, trains):
+        for name in names:
+            player = Player(name, trains)
+            self.add_player(player)
+
     def draw_destination_cards(self):
         cards = []
         for i in range(DESTINATION_CARDS_DRAW):
@@ -158,6 +162,11 @@ class Game:
             else:
                 return self.cards.pop()
         return None
+
+    def deal_initial_cards(self, num_cards):
+        for player in self.players:
+            for i in range(num_cards):
+                player.add_card(self.draw_card())
 
     def turn_cards_face_up(self):
         turning = True

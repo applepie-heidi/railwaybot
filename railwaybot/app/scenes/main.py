@@ -35,7 +35,7 @@ class MainScene(Scene):
         super().__init__()
         self.game = game
         self.railway_images = load_railway_images(RAILWAY_IMAGES_DIRECTORY)
-        self.board_group = BoardGroup()
+        self.board_group = BoardGroup(game, COLORS_DICT)
         self._add()
         self.sub_scene: Optional[Scene] = None
 

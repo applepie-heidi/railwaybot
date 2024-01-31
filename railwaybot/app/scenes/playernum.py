@@ -30,11 +30,9 @@ class NumberOfPlayersScene(Scene):
 
     def handle_click(self, pos):
         self.button_group.handle_click(pos)
-        clicked = self.button_group.get_clicked()
+        clicked = self.button_group.get_clicked_text()
         if clicked:
-            for i in range(int(clicked)):
-                player = Player(COLORS_LIST[i], TRAINS)
-                self.game.add_player(player)
+            self.game.add_players(COLORS_LIST[:int(clicked)], TRAINS)
 
     def draw(self, screen):
         background = pg.Surface(SCREEN_SIZE)
