@@ -1,4 +1,7 @@
+from app.scenes.dest import DestinationChooserScene
+from app.scenes.playernum import NumberOfPlayersScene
 from app.scenes.scene import Scene
+from app.config import CARDS_DRAW_INITIAL
 
 
 class SetupScene(Scene):
@@ -11,8 +14,13 @@ class SetupScene(Scene):
 
     def handle_click(self, pos):
         self.scene.handle_click(pos)
-        if self.game.players:  # imamo samo ako je prethodna scena napravila igrače
-            self.scene = DestinationChooserScene(game)
+        if self.game.players:
+            if type(self.scene) is NumberOfPlayersScene:
+                self.scene = DestinationChooserScene(self.game)
+            elif self.scene.is_finished():
+                for player in self.game.players:
+                    for i in range(CARDS_DRAW_INITIAL):
+                        player.add_card(self.game.draw_card())
 
     def draw(self, screen):
         self.scene.draw(screen)

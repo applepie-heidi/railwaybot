@@ -3,8 +3,7 @@ import random
 
 from .board import Board, Railway
 
-CARDS_DRAW_INITIAL = 4
-CARDS_DRAW = 2
+
 DESTINATION_CARDS_DRAW = 3
 CARDS_FACE_UP = 5
 ANY_COLOR = "any"

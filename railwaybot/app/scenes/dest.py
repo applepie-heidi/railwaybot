@@ -5,11 +5,9 @@ from app.scenes.scene import Scene
 
 
 class DestinationChooserScene(Scene):
-    def __init__(self, game, color, names: List[str] = None):
+    def __init__(self, game):
         super().__init__()
         self.game = game
-        self.color = color
-        self.names = names if names else []
 
         self._finished = False
 
@@ -31,6 +29,4 @@ class DestinationChooserScene(Scene):
 
     @property
     def is_finished(self):
-        # Gotovi smo sa scenom ako je odabrano 2 ili vise gradova
-        # -> signaliziraj da je gotovo tako da vratis True
-        return False
+        return self._finished
