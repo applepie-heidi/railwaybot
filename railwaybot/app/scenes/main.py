@@ -3,6 +3,7 @@ from typing import Optional
 import pygame as pg
 
 from app.components.board import Board, BoardGroup
+from app.components.cards import DeckGroup, Card
 from app.config import *
 from app.scenes.scene import Scene
 
@@ -18,6 +19,7 @@ def load_image(path, color_key=None, scale=1.0):
     if color_key:
         image.set_colorkey(color_key)
     return image
+
 
 def load_railway_images(image_directory):
     railway_images = {}
@@ -36,12 +38,25 @@ class MainScene(Scene):
         self.game = game
         self.railway_images = load_railway_images(RAILWAY_IMAGES_DIRECTORY)
         self.board_group = BoardGroup(game, COLORS_DICT)
+        self.destination_deck_group = DeckGroup()
+        self.train_deck_group = DeckGroup()
         self._add()
         self.sub_scene: Optional[Scene] = None
 
     def _add(self):
-        board = Board(BOARD_IMAGE_PATH, BOARD_POSITION[0], BOARD_POSITION[1], self.railway_images)
+        board = Board(BOARD_IMAGE_PATH, PADDING, PADDING, self.railway_images)
         self.board_group.add(board)
+
+        destination_deck = Card(DESTINATION_DECK_PATH, PADDING + board.rect.width + 2 * PADDING,
+                                PADDING + BIG_TEXT_SIZE + len(COLORS_DICT) * (SMALL_TEXT_SIZE + 2 * PADDING),
+                                CARD_VERTICAL_SIZE[0], CARD_VERTICAL_SIZE[1])
+        self.destination_deck_group.add(destination_deck)
+
+        train_deck = Card(TRAIN_DECK_PATH, PADDING + board.rect.width + 2 * PADDING,
+                          PADDING + BIG_TEXT_SIZE + len(COLORS_DICT) * (SMALL_TEXT_SIZE + 2 * PADDING) + PADDING +
+                          CARD_VERTICAL_SIZE[1],
+                          CARD_VERTICAL_SIZE[0], CARD_VERTICAL_SIZE[1])
+        self.train_deck_group.add(train_deck)
 
     def handle_click(self, pos):
         self.board_group.handle_click(pos)
@@ -55,7 +70,8 @@ class MainScene(Scene):
             background.fill(SCREEN_COLOR)
             screen.blit(background, (0, 0))
             self.board_group.draw(screen)
-
+            self.destination_deck_group.draw(screen)
+            self.train_deck_group.draw(screen)
 
     @property
     def is_finished(self):
