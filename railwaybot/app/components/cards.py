@@ -12,7 +12,7 @@ class Card(pg.sprite.Sprite):
         self.color = color
 
 
-class DeckGroup(pg.sprite.Group):
+class DeckGroup(pg.sprite.GroupSingle):
     def __init__(self):
         super().__init__()
         self._clicked = False
@@ -33,7 +33,7 @@ class DeckGroup(pg.sprite.Group):
         return self._clicked
 
 
-class FaceUpCardsGroup(pg.sprite.Group):
+class CardsGroup(pg.sprite.Group):
     def __init__(self):
         super().__init__()
         self.clicked_card = None
@@ -44,8 +44,7 @@ class FaceUpCardsGroup(pg.sprite.Group):
     def handle_click(self, pos):
         for card in self.sprites():
             if card.rect.collidepoint(pos):
-                self.remove(card)
-                return card
+                self.clicked_card = card
 
     def add_card(self, card: Card):
         self.add(card)
