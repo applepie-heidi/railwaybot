@@ -39,6 +39,7 @@ class Railway:
         self.length = length
         self.color = color
         self.claimed = False
+        self.is_x = False
 
     def __str__(self):
         return self.city1 + " - " + self.city2 + " (" + str(self.length) + ", " + self.color + ")"
@@ -69,6 +70,12 @@ class Board:
                 color = railway_data["color"]
                 railway = Railway(city1, city2, length, color)
                 self.all_railways.append(railway)
+            prev = None
+            for railway in sorted(self.all_railways, key=lambda r: (r.city1, r.city2, r.color)):
+                if prev:
+                    if prev.city1 == railway.city1 and prev.city2 == railway.city2 and prev.color == railway.color:
+                        railway.is_x = True
+                prev = railway
 
     def add_city(self, name):
         self.cities.append(name)

@@ -2,44 +2,21 @@ from typing import Optional
 
 import pygame as pg
 
-from app.components.board import Board, BoardGroup
+from app.components.board import BoardGroup
 from app.components.cards import DeckGroup, Card, CardsGroup
 from app.components.text import Text, TextGroup
 from app.config import *
 from app.scenes.dest import DestinationChooserScene
 from app.scenes.scene import Scene
-
-
-def load_image(path, color_key=None, scale=1.0):
-    image = pg.image.load(path)
-    image = image.convert_alpha()
-
-    size = image.get_size()
-    size = (size[0] * scale, size[1] * scale)
-    image = pg.transform.scale(image, size)
-
-    if color_key:
-        image.set_colorkey(color_key)
-    return image
-
-
-def load_railway_images(image_directory):
-    railway_images = {}
-    for filename in os.listdir(image_directory):
-        if filename.endswith(".png"):
-            image = load_image(os.path.join(image_directory, filename))
-            image_name_list = filename[:-4].replace("_", " ").split("-")
-            image_name = (image_name_list[0], image_name_list[1], image_name_list[2])
-            railway_images[image_name] = image
-    return railway_images
+from engine.game import Game
 
 
 class MainScene(Scene):
-    def __init__(self, game):
+    def __init__(self, game: Game, railway_images):
         super().__init__()
         self.game = game
-        self.railway_images = load_railway_images(RAILWAY_IMAGES_DIRECTORY)
-        self.board_group = BoardGroup(game, COLORS_DICT)
+        self.railway_images = railway_images
+        self.board_group = BoardGroup(game, COLORS_DICT, BOARD_IMAGE_PATH, PADDING, PADDING)
         self.text_group = TextGroup()
         self.destination_deck_group = DeckGroup()
         self.train_deck_group = DeckGroup()
@@ -55,17 +32,18 @@ class MainScene(Scene):
         self._finished = False
 
     def _add(self):
-        board = Board(BOARD_IMAGE_PATH, PADDING, PADDING)
-        self.board_group.add(board)
+        # board = Board(BOARD_IMAGE_PATH, PADDING, PADDING)
+        # self.board_group.add(board)
+        # board = self.board_group.board
 
         self._refresh_text()
 
-        destination_deck = Card(DESTINATION_DECK_PATH, PADDING + board.rect.width + 2 * PADDING,
+        destination_deck = Card(DESTINATION_DECK_PATH, PADDING + self.board_group.sprite.rect.width + 2 * PADDING,
                                 PADDING + BIG_TEXT_SIZE + len(COLORS_DICT) * (SMALL_TEXT_SIZE + 2 * PADDING),
                                 CARD_VERTICAL_SIZE[0], CARD_VERTICAL_SIZE[1])
         self.destination_deck_group.add(destination_deck)
 
-        train_deck = Card(TRAIN_DECK_PATH, PADDING + board.rect.width + 2 * PADDING,
+        train_deck = Card(TRAIN_DECK_PATH, PADDING + self.board_group.sprite.rect.width + 2 * PADDING,
                           PADDING + BIG_TEXT_SIZE + len(COLORS_DICT) * (SMALL_TEXT_SIZE + 2 * PADDING) + PADDING +
                           CARD_VERTICAL_SIZE[1],
                           CARD_VERTICAL_SIZE[0], CARD_VERTICAL_SIZE[1])
@@ -153,20 +131,7 @@ class MainScene(Scene):
                     colors_count = {}
                     for color in self.route_claiming_cards:
                         colors_count[color] = colors_count.get(color, 0) + 1
-                    railway_images = {}
-                    for railway_image in self.railway_images:
-                        length = 0
-                        if railway_image[2].strip("x") == "grey":
-                            length = sum(colors_count.values())
-                        else:
-                            if len(colors_count) <= 2:
-                                length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR,
-                                                                                                             0)
-                        railways = self.game.board.get_railways(railway_image[0], railway_image[1])
-                        for railway in railways:
-                            if length == railway.length and self.game.get_current_player().trains >= railway.length:
-                                if not railway.claimed and railway.color == railway_image[2].strip("x"):
-                                    railway_images[railway_image] = self.railway_images[railway_image]
+                    railway_images = self._calc_relevant_railways(colors_count)
                     self.board_group.set_railway_images(railway_images)
                     self.board_group.handle_click(pos)
                     if self.board_group.clicked_railway:
@@ -200,11 +165,11 @@ class MainScene(Scene):
                                 self.game.claim_railway(railway, self.route_claiming_cards)
                                 self.route_claiming_cards = []
                                 self._refresh_route_claiming_cards()
-                                if self.game.get_current_player().trains <= 2:
-                                    self.final_round = True
-                                if self.final_round:
-                                    self.do_final_round()
 
+                        if self.final_round:
+                            self.do_final_round()
+                        if self.game.get_current_player().trains <= 2:
+                            self.final_round = True
                         self.board_group.remove_clicked_railway()
                         self.game.next_turn()
                         self._refresh_text()
@@ -249,6 +214,23 @@ class MainScene(Scene):
                 self.remove_route_claiming_card()
                 self.route_claiming_cards_group.remove_clicked_card()
                 self._refresh_text()
+
+    def _calc_relevant_railways(self, colors_count):
+        railway_images = {}
+        for railway_image in self.railway_images:
+            length = 0
+            if railway_image[2].strip("x") == "grey":
+                length = sum(colors_count.values())
+            else:
+                if len(colors_count) <= 2:
+                    length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR,
+                                                                                                 0)
+            railways = self.game.board.get_railways(railway_image[0], railway_image[1])
+            for railway in railways:
+                if length == railway.length and self.game.get_current_player().trains >= railway.length:
+                    if not railway.claimed and railway.color == railway_image[2].strip("x"):
+                        railway_images[railway_image] = self.railway_images[railway_image]
+        return railway_images
 
     def put_route_claiming_card(self):
         color = self.mini_cards_group.get_clicked_card().color
