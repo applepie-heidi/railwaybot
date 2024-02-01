@@ -144,8 +144,10 @@ class MainScene(Scene):
                 if not self.route_claiming_cards_group.sprites():
                     self.destination_deck_group.handle_click(pos)
                 else:
-                    colors_count = {i: self.route_claiming_cards_group.sprites().count(i) for i in
-                                    self.route_claiming_cards_group.sprites()}
+                    print(len(self.route_claiming_cards_group.sprites()))
+                    colors_count = {}
+                    for color in self.route_claiming_cards:
+                        colors_count[color] = colors_count.get(color, 0) + 1
                     railway_images = {}
                     for railway_image in self.railway_images:
                         length = 0
@@ -153,7 +155,8 @@ class MainScene(Scene):
                             length = sum(colors_count.values())
                         else:
                             if len(colors_count) <= 2:
-                                length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR, 0)
+                                length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR,
+                                                                                                             0)
                         railways = self.game.board.get_railways(railway_image[0], railway_image[1])
                         for railway in railways:
                             if length == railway.length:
@@ -161,7 +164,40 @@ class MainScene(Scene):
                                     railway_images[railway_image] = self.railway_images[railway_image]
                     self.board_group.set_railway_images(railway_images)
                     self.board_group.handle_click(pos)
-
+                    if self.board_group.clicked_railway:
+                        railways = self.game.board.get_railways(self.board_group.clicked_railway[0],
+                                                                self.board_group.clicked_railway[1])
+                        if railways:
+                            railway = railways[0]
+                            if len(railways) == 2:
+                                railway2 = railways[1]
+                                if len(self.game.players) <= 3:
+                                    if railway.color == self.board_group.clicked_railway[2].strip("x"):
+                                        self.game.claim_railway(railway, self.route_claiming_cards,
+                                                                parallel_railway=railway2)
+                                        self.route_claiming_cards = []
+                                        self._refresh_route_claiming_cards()
+                                    else:
+                                        self.game.claim_railway(railway2, self.route_claiming_cards,
+                                                                parallel_railway=railway)
+                                        self.route_claiming_cards = []
+                                        self._refresh_route_claiming_cards()
+                                else:
+                                    if railway.color == self.board_group.clicked_railway[2].strip("x"):
+                                        self.game.claim_railway(railway, self.route_claiming_cards)
+                                        self.route_claiming_cards = []
+                                        self._refresh_route_claiming_cards()
+                                    else:
+                                        self.game.claim_railway(railway2, self.route_claiming_cards)
+                                        self.route_claiming_cards = []
+                                        self._refresh_route_claiming_cards()
+                            else:
+                                self.game.claim_railway(railway, self.route_claiming_cards)
+                                self.route_claiming_cards = []
+                                self._refresh_route_claiming_cards()
+                        self.board_group.remove_clicked_railway()
+                        self.game.next_turn()
+                        self._refresh_text()
 
                 self.route_claiming_cards_group.handle_click(pos)
                 self.mini_cards_group.handle_click(pos)

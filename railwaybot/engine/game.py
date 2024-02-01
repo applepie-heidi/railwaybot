@@ -194,7 +194,6 @@ class Game:
         current_player.add_railway(railway)
         railway.claimed = True
         for card in cards:
-            current_player.remove_card(card)
             self.discarded_cards.append(card)
         if parallel_railway:
             parallel_railway.claimed = True
