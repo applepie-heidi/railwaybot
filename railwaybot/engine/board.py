@@ -73,12 +73,12 @@ class Board:
     def add_city(self, name):
         self.cities.append(name)
 
-    def get_railways(self, city1, city2, color):
+    def get_railways(self, city1, city2):
         temp = [city1, city2]
         temp.sort()
         railways = []
         for railway in self.all_railways:
-            if railway.city1 == temp[0] and railway.city2 == temp[1] and railway.color == color:
+            if railway.city1 == temp[0] and railway.city2 == temp[1]:
                 railways.append(railway)
         return railways
 

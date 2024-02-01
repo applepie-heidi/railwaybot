@@ -41,6 +41,9 @@ class CardsGroup(pg.sprite.Group):
     def add(self, *cards: Card):
         super().add(*cards)
 
+    def remove(self, *cards: Card):
+        super().remove(*cards)
+
     def handle_click(self, pos):
         for card in self.sprites():
             if card.rect.collidepoint(pos):

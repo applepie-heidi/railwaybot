@@ -46,12 +46,13 @@ class MainScene(Scene):
         self.face_up_cards_group = CardsGroup()
         self.mini_cards_group = CardsGroup()
         self.route_claiming_cards_group = CardsGroup()
+        self.route_claiming_cards = []
         self._add()
         self.sub_scene: Optional[Scene] = None
         self.draws_left = CARDS_DRAW
 
     def _add(self):
-        board = Board(BOARD_IMAGE_PATH, PADDING, PADDING, self.railway_images)
+        board = Board(BOARD_IMAGE_PATH, PADDING, PADDING)
         self.board_group.add(board)
 
         self._refresh_text()
@@ -119,6 +120,18 @@ class MainScene(Scene):
                                 CARD_HORIZONTAL_SIZE[0], CARD_HORIZONTAL_SIZE[1], color=card)
             self.face_up_cards_group.add(face_up_card)
 
+    def _refresh_route_claiming_cards(self):
+        self.route_claiming_cards_group.empty()
+        for i, card in enumerate(self.route_claiming_cards):
+            route_claiming_card = Card(TRAIN_IMAGES_DICT[card],
+                                       PADDING + DESTINATIONS_PADDING + 5 * PADDING + CARD_HORIZONTAL_SIZE[0] + (
+                                               i % 3) * (
+                                               CARD_HORIZONTAL_SIZE[0] + PADDING),
+                                       PADDING + self.board_group.sprite.rect.height + PADDING + (
+                                               i // 3) * (CARD_HORIZONTAL_SIZE[1] + PADDING),
+                                       CARD_HORIZONTAL_SIZE[0], CARD_HORIZONTAL_SIZE[1], color=card)
+            self.route_claiming_cards_group.add(route_claiming_card)
+
     def handle_click(self, pos):
         if self.sub_scene:
             self.sub_scene.handle_click(pos)
@@ -128,10 +141,33 @@ class MainScene(Scene):
                 self._refresh_text()
         else:
             if self.draws_left == CARDS_DRAW:
-                self.board_group.handle_click(pos)
-                self.destination_deck_group.handle_click(pos)
-            if (self.draws_left == CARDS_DRAW and len(self.game.cards) >= CARDS_DRAW) or (
-                    self.draws_left == CARDS_DRAW - 1 and len(self.game.cards) >= CARDS_DRAW - 1):
+                if not self.route_claiming_cards_group.sprites():
+                    self.destination_deck_group.handle_click(pos)
+                else:
+                    colors_count = {i: self.route_claiming_cards_group.sprites().count(i) for i in
+                                    self.route_claiming_cards_group.sprites()}
+                    railway_images = {}
+                    for railway_image in self.railway_images:
+                        length = 0
+                        if railway_image[2].strip("x") == "grey":
+                            length = sum(colors_count.values())
+                        else:
+                            if len(colors_count) <= 2:
+                                length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR, 0)
+                        railways = self.game.board.get_railways(railway_image[0], railway_image[1])
+                        for railway in railways:
+                            if length == railway.length:
+                                if not railway.claimed and railway.color == railway_image[2].strip("x"):
+                                    railway_images[railway_image] = self.railway_images[railway_image]
+                    self.board_group.set_railway_images(railway_images)
+                    self.board_group.handle_click(pos)
+
+
+                self.route_claiming_cards_group.handle_click(pos)
+                self.mini_cards_group.handle_click(pos)
+            if ((self.draws_left == CARDS_DRAW and len(self.game.cards) >= CARDS_DRAW) or (
+                    self.draws_left == CARDS_DRAW - 1 and len(self.game.cards) >= CARDS_DRAW - 1)) and (
+                    not self.route_claiming_cards_group.sprites()):
                 self.train_deck_group.handle_click(pos)
                 self.face_up_cards_group.handle_click(pos)
 
@@ -154,6 +190,28 @@ class MainScene(Scene):
                     self._refresh_text()
                     self.draws_left = CARDS_DRAW
                 self._refresh_face_up_cards()
+            elif self.mini_cards_group.get_clicked_card():
+                if len(self.route_claiming_cards_group.sprites()) < ROUTE_MAX_LENGTH:
+                    self.put_route_claiming_card()
+                self.mini_cards_group.remove_clicked_card()
+                self._refresh_text()
+            elif self.route_claiming_cards_group.get_clicked_card():
+                self.remove_route_claiming_card()
+                self.route_claiming_cards_group.remove_clicked_card()
+                self._refresh_text()
+
+    def put_route_claiming_card(self):
+        color = self.mini_cards_group.get_clicked_card().color
+        if color in self.game.get_current_player().cards:
+            self.route_claiming_cards.append(color)
+            self.game.get_current_player().remove_card(color)
+            self._refresh_route_claiming_cards()
+
+    def remove_route_claiming_card(self):
+        color = self.route_claiming_cards_group.get_clicked_card().color
+        self.route_claiming_cards.remove(color)
+        self.game.get_current_player().add_card(color)
+        self._refresh_route_claiming_cards()
 
     def draw_deck_train_card(self):
         card = self.game.draw_card()
@@ -183,6 +241,7 @@ class MainScene(Scene):
             self.train_deck_group.draw(screen)
             self.face_up_cards_group.draw(screen)
             self.mini_cards_group.draw(screen)
+            self.route_claiming_cards_group.draw(screen)
 
 
 @property
