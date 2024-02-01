@@ -19,7 +19,6 @@ def main():
     clock = pg.time.Clock()
 
     done = False
-    main_scene = MainScene(game)
 
     current_scene = SetupScene(game)
 
@@ -33,7 +32,7 @@ def main():
 
             if current_scene and current_scene.is_finished:
                 if isinstance(current_scene, SetupScene):
-                    current_scene = main_scene
+                    current_scene = MainScene(game)
 
         if done:
             break

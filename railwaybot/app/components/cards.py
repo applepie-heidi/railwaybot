@@ -31,3 +31,27 @@ class DeckGroup(pg.sprite.Group):
     @property
     def is_clicked(self):
         return self._clicked
+
+
+class FaceUpCardsGroup(pg.sprite.Group):
+    def __init__(self):
+        super().__init__()
+        self.clicked_card = None
+
+    def add(self, *cards: Card):
+        super().add(*cards)
+
+    def handle_click(self, pos):
+        for card in self.sprites():
+            if card.rect.collidepoint(pos):
+                self.remove(card)
+                return card
+
+    def add_card(self, card: Card):
+        self.add(card)
+
+    def get_clicked_card(self):
+        return self.clicked_card
+
+    def remove_clicked_card(self):
+        self.clicked_card = None

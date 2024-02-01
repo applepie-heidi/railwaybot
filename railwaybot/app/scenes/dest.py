@@ -23,10 +23,10 @@ class DestinationChooserScene(Scene):
         self._add()
 
     def _add(self):
-        text = Text(f"Choose a minimum of {self.minimum_selected} cards", (0, 0, 0), BIG_TEXT_SIZE,
-                    SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - BIG_TEXT_SIZE, center=True)
+        text = Text(f"Choose a minimum of {self.minimum_selected} cards", (0, 0, 0), HUGE_TEXT_SIZE,
+                    SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - HUGE_TEXT_SIZE, center=True)
         player_text = Text(f"Player {self.current_player.color.upper()}", COLORS_DICT[self.current_player.color], BIG_TEXT_SIZE,
-                           SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - 2 * BIG_TEXT_SIZE, center=True)
+                           SCREEN_SIZE[0] / 2, SCREEN_SIZE[1] / 2 - 2 * HUGE_TEXT_SIZE, center=True)
         self.text_group.add(text)
         self.text_group.add(player_text)
 
@@ -53,8 +53,8 @@ class DestinationChooserScene(Scene):
                 destinations = self.destinations.copy()
                 for destination in self.destinations:
                     for selected in self.dest_group.get_selected():
-                        if str(destination) == selected:
-                            self.current_player.add_destination(destination)
+                        if str(destination) == selected.text:
+                            self.current_player.add_destination_card(destination)
                             destinations.remove(destination)
                 self.game.discard_destination_cards(destinations)
 
