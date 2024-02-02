@@ -195,6 +195,7 @@ class MainScene(Scene):
                     self.draws_left = CARDS_DRAW
                     if self.final_round:
                         self.do_final_round()
+                self._refresh_text()
             elif self.face_up_cards_group.get_clicked_card():
                 self.draw_face_up_train_card(self.face_up_cards_group.clicked_card.color)
                 self.face_up_cards_group.remove_clicked_card()
@@ -205,6 +206,7 @@ class MainScene(Scene):
                     if self.final_round:
                         self.do_final_round()
                 self._refresh_face_up_cards()
+                self._refresh_text()
             elif self.mini_cards_group.get_clicked_card():
                 if len(self.route_claiming_cards_group.sprites()) < ROUTE_MAX_LENGTH:
                     self.put_route_claiming_card()
@@ -219,10 +221,10 @@ class MainScene(Scene):
         railway_images = {}
         for railway_image in self.railway_images:
             length = 0
-            if railway_image[2].strip("x") == "grey":
-                length = sum(colors_count.values())
-            else:
-                if len(colors_count) <= 2:
+            if len(colors_count) <= 2:
+                if railway_image[2].strip("x") == "grey":
+                    length = sum(colors_count.values())
+                else:
                     length = colors_count.get(railway_image[2].strip("x"), 0) + colors_count.get(ANY_COLOR,
                                                                                                  0)
             railways = self.game.board.get_railways(railway_image[0], railway_image[1])
