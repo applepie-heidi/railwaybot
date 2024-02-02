@@ -27,7 +27,7 @@ class MainScene(Scene):
         self._add()
         self.sub_scene: Optional[Scene] = None
         self.draws_left = CARDS_DRAW
-        self.final_round = False
+        self.final_round = True
         self.final_turns_left = len(self.game.players)
         self._finished = False
 
